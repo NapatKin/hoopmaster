@@ -685,11 +685,16 @@ function startGame(mode) {
   updateSidebar();
   updateStreak();
   updateWindRandom();
-  resizeCanvas();
-  resetBall();
   showScreen('gameScreen');
   cancelAnimationFrame(animId);
-  gameLoop();
+  // Wait two frames so the canvas is visible and has real dimensions
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      resizeCanvas();
+      resetBall();
+      gameLoop();
+    });
+  });
 }
 
 function quitGame() {
