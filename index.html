@@ -8,54 +8,51 @@
 </head>
 <body>
 
-  <!-- SPLASH SCREEN -->
+  <!-- SPLASH -->
   <div id="splash" class="screen active">
-    <div class="splash-bg">
-      <div class="court-lines"></div>
-    </div>
+    <canvas id="splashCanvas" class="splash-canvas"></canvas>
     <div class="splash-content">
-      <div class="ball-bounce" id="splashBall">🏀</div>
+      <div class="ball-bounce">🏀</div>
       <h1 class="game-title">HOOP<span>MASTER</span></h1>
       <p class="tagline">Shoot. Score. Dominate.</p>
       <div class="menu-buttons">
-        <button class="btn btn-primary" onclick="showScreen('modeSelect')">PLAY</button>
+        <button class="btn btn-primary glow-btn" onclick="showScreen('modeSelect')">▶ PLAY</button>
+        <button class="btn btn-secondary" onclick="showScreen('clickerScreen')">🏀 CLICKER</button>
         <button class="btn btn-secondary" onclick="showScreen('howToPlay')">HOW TO PLAY</button>
         <button class="btn btn-secondary" onclick="showScreen('leaderboard')">LEADERBOARD</button>
       </div>
-      <div class="stars">
-        <span id="totalStars">⭐ 0</span> total stars earned
-      </div>
+      <div class="stars"><span id="totalStars">⭐ 0</span> stars earned</div>
     </div>
   </div>
 
   <!-- MODE SELECT -->
   <div id="modeSelect" class="screen">
-    <div class="splash-bg"></div>
+    <canvas id="splashCanvas2" class="splash-canvas"></canvas>
     <div class="mode-content">
       <h2 class="section-title">SELECT MODE</h2>
       <div class="mode-grid">
         <div class="mode-card" onclick="startGame('classic')">
           <div class="mode-icon">🏀</div>
           <h3>CLASSIC</h3>
-          <p>10 shots. Maximum score wins.</p>
-          <span class="mode-tag">BEGINNER FRIENDLY</span>
+          <p>10 shots. Max score wins.</p>
+          <span class="mode-tag">BEGINNER</span>
         </div>
         <div class="mode-card" onclick="startGame('timeAttack')">
           <div class="mode-icon">⏱️</div>
           <h3>TIME ATTACK</h3>
-          <p>Score as many points as possible in 60 seconds.</p>
+          <p>Score as many as possible in 60 seconds.</p>
           <span class="mode-tag">FAST PACED</span>
         </div>
         <div class="mode-card" onclick="startGame('threePoint')">
           <div class="mode-icon">🎯</div>
           <h3>3-POINT CONTEST</h3>
-          <p>5 racks. 5 balls each. Nail the money ball.</p>
+          <p>25 shots from deep. Go for perfection.</p>
           <span class="mode-tag">PRECISION</span>
         </div>
         <div class="mode-card" onclick="startGame('challenge')">
           <div class="mode-icon">🔥</div>
           <h3>SURVIVAL</h3>
-          <p>Miss 3 shots and it's game over. How far can you go?</p>
+          <p>Miss 3 and it's over. How far?</p>
           <span class="mode-tag">HARDCORE</span>
         </div>
       </div>
@@ -68,26 +65,12 @@
     <div class="howto-content">
       <h2 class="section-title">HOW TO PLAY</h2>
       <div class="howto-grid">
-        <div class="howto-item">
-          <span class="howto-icon">🖱️</span>
-          <h4>AIM</h4>
-          <p>Click and hold anywhere on the court to start your shot</p>
-        </div>
-        <div class="howto-item">
-          <span class="howto-icon">⚡</span>
-          <h4>POWER</h4>
-          <p>Hold longer to build more power. Release to shoot!</p>
-        </div>
-        <div class="howto-item">
-          <span class="howto-icon">🎯</span>
-          <h4>ACCURACY</h4>
-          <p>Adjust accuracy slider to change shot consistency</p>
-        </div>
-        <div class="howto-item">
-          <span class="howto-icon">🏆</span>
-          <h4>SCORE</h4>
-          <p>2pts inside arc, 3pts outside. Combos give bonus points!</p>
-        </div>
+        <div class="howto-item"><span class="howto-icon">🖱️</span><h4>AIM</h4><p>Click and hold to aim toward the hoop</p></div>
+        <div class="howto-item"><span class="howto-icon">⚡</span><h4>POWER</h4><p>Hold longer to build more power, release to shoot</p></div>
+        <div class="howto-item"><span class="howto-icon">🎯</span><h4>ACCURACY</h4><p>Adjust accuracy slider — max skill = perfect aim</p></div>
+        <div class="howto-item"><span class="howto-icon">🏆</span><h4>SCORE</h4><p>2pts inside arc, 3pts outside. Combos = bonus!</p></div>
+        <div class="howto-item"><span class="howto-icon">✨</span><h4>WISH SHOT</h4><p>Clean swish (no rim) = extra bonus + special effect</p></div>
+        <div class="howto-item"><span class="howto-icon">🔥</span><h4>STREAK</h4><p>Chain baskets for fire mode and multiplied points</p></div>
       </div>
       <button class="btn btn-back" onclick="showScreen('splash')">← BACK</button>
     </div>
@@ -102,78 +85,82 @@
     </div>
   </div>
 
+  <!-- CLICKER SCREEN -->
+  <div id="clickerScreen" class="screen">
+    <div class="clicker-layout">
+      <div class="clicker-left">
+        <button class="btn btn-back clicker-back" onclick="showScreen('splash')">← BACK</button>
+        <h2 class="clicker-title">BALL TYCOON</h2>
+        <div class="clicker-coins">
+          <span id="clickerCoins">0</span>
+          <span class="coin-label">🪙 COINS</span>
+        </div>
+        <div class="clicker-cps" id="clickerCPS">0 coins/sec</div>
+        <div class="clicker-ball-wrap">
+          <div class="clicker-ball" id="clickerBall" onclick="clickBall()">🏀</div>
+          <div id="clickParticles" class="click-particles"></div>
+        </div>
+        <div class="clicker-cpc">+<span id="clickerCPC">1</span> per click</div>
+        <div class="clicker-multiplier" id="clickerMult" style="display:none">🔥 <span id="multVal">1</span>x MULTIPLIER</div>
+      </div>
+      <div class="clicker-right">
+        <h3 class="upgrade-title">UPGRADES</h3>
+        <div id="upgradeList" class="upgrade-list"></div>
+      </div>
+    </div>
+  </div>
+
   <!-- GAME SCREEN -->
   <div id="gameScreen" class="screen">
     <div class="game-layout">
-
-      <!-- SIDEBAR -->
       <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-          <span class="sidebar-logo">🏀</span>
-          <span>HoopMaster</span>
-        </div>
-
+        <div class="sidebar-header"><span>🏀</span><span>HoopMaster</span></div>
         <div class="sidebar-section">
           <div class="sidebar-label">MODE</div>
           <div class="sidebar-value" id="sidebarMode">Classic</div>
         </div>
-
         <div class="sidebar-section">
           <div class="sidebar-label">SCORE</div>
           <div class="sidebar-value score-display" id="sidebarScore">0</div>
         </div>
-
         <div class="sidebar-section" id="shotCountSection">
           <div class="sidebar-label">SHOTS LEFT</div>
           <div class="shot-dots" id="shotDots"></div>
         </div>
-
         <div class="sidebar-section" id="timerSection" style="display:none">
           <div class="sidebar-label">TIME</div>
           <div class="sidebar-value timer-display" id="sidebarTimer">60</div>
         </div>
-
         <div class="sidebar-section" id="livesSection" style="display:none">
           <div class="sidebar-label">LIVES</div>
-          <div class="sidebar-value lives-display" id="sidebarLives">❤️❤️❤️</div>
+          <div class="sidebar-value" id="sidebarLives">❤️❤️❤️</div>
         </div>
-
         <div class="sidebar-section">
           <div class="sidebar-label">STREAK</div>
-          <div class="sidebar-value streak-display" id="sidebarStreak">0 🔥</div>
+          <div class="sidebar-value streak-display" id="sidebarStreak">0</div>
         </div>
-
         <div class="sidebar-section">
           <div class="sidebar-label">ACCURACY %</div>
           <div class="sidebar-value" id="sidebarAccPct">—</div>
         </div>
-
         <hr class="sidebar-divider" />
-
-        <!-- CONTROLS -->
         <div class="sidebar-section">
           <div class="sidebar-label">ACCURACY SKILL</div>
           <input type="range" id="accuracySlider" min="1" max="10" value="5" class="slider" />
           <div class="slider-labels"><span>Wild</span><span>Perfect</span></div>
         </div>
-
         <div class="sidebar-section">
           <div class="sidebar-label">WIND</div>
-          <div class="wind-display" id="windDisplay">➡️ +0</div>
+          <div class="wind-display" id="windDisplay">— 0</div>
         </div>
-
         <hr class="sidebar-divider" />
-
-        <!-- MINI-GAME BUTTONS -->
         <div class="sidebar-section">
           <div class="sidebar-label">MINI-GAMES</div>
-          <button class="mini-btn" onclick="triggerMiniGame('hotStreak')">🔥 Hot Streak</button>
-          <button class="mini-btn" onclick="triggerMiniGame('bankShot')">🏦 Bank Shot</button>
-          <button class="mini-btn" onclick="triggerMiniGame('alleyOop')">🚀 Alley-Oop</button>
+          <button class="mini-btn" onclick="triggerMiniGame('hotStreak')">🔥 Hot Streak +2</button>
+          <button class="mini-btn" onclick="triggerMiniGame('bankShot')">🏦 Bank Shot +5</button>
+          <button class="mini-btn" onclick="triggerMiniGame('alleyOop')">🚀 Alley-Oop +3</button>
         </div>
-
         <hr class="sidebar-divider" />
-
         <div class="sidebar-section">
           <div class="sidebar-label">FILES</div>
           <div class="file-tree">
@@ -181,52 +168,37 @@
             <div class="file-item">🎨 style.css</div>
             <div class="file-item">⚡ game.js</div>
             <div class="file-item">🔊 audio.js</div>
+            <div class="file-item">🏀 clicker.js</div>
           </div>
         </div>
-
         <button class="btn btn-back sidebar-quit" onclick="quitGame()">✕ QUIT</button>
       </aside>
-
-      <!-- MAIN GAME CANVAS AREA -->
       <main class="game-main">
         <canvas id="gameCanvas"></canvas>
         <div id="powerMeterContainer" class="power-meter-container" style="display:none">
           <div class="power-label">POWER</div>
-          <div class="power-bar-bg">
-            <div id="powerBar" class="power-bar"></div>
-          </div>
+          <div class="power-bar-bg"><div id="powerBar" class="power-bar"></div></div>
         </div>
         <div id="floatingScore" class="floating-score"></div>
         <div id="comboDisplay" class="combo-display"></div>
         <div id="miniGameBanner" class="minigame-banner" style="display:none"></div>
-        <div id="windArrow" class="wind-arrow"></div>
+        <div id="wishBanner" class="wish-banner" style="display:none">✨ NOTHING BUT NET!</div>
+        <div id="threePointBanner" class="three-banner" style="display:none">🎯 THREE POINTER!</div>
       </main>
-
     </div>
   </div>
 
-  <!-- GAME OVER SCREEN -->
+  <!-- GAME OVER -->
   <div id="gameOver" class="screen">
+    <canvas id="confettiCanvas" class="confetti-canvas"></canvas>
     <div class="gameover-content">
       <div id="gameOverEmoji" class="gameover-emoji">🏆</div>
       <h2 id="gameOverTitle" class="gameover-title">GAME OVER</h2>
       <div class="gameover-stats">
-        <div class="stat-block">
-          <div class="stat-num" id="goScore">0</div>
-          <div class="stat-lbl">SCORE</div>
-        </div>
-        <div class="stat-block">
-          <div class="stat-num" id="goShots">0</div>
-          <div class="stat-lbl">SHOTS MADE</div>
-        </div>
-        <div class="stat-block">
-          <div class="stat-num" id="goStreak">0</div>
-          <div class="stat-lbl">BEST STREAK</div>
-        </div>
-        <div class="stat-block">
-          <div class="stat-num" id="goAccuracy">0%</div>
-          <div class="stat-lbl">ACCURACY</div>
-        </div>
+        <div class="stat-block"><div class="stat-num" id="goScore">0</div><div class="stat-lbl">SCORE</div></div>
+        <div class="stat-block"><div class="stat-num" id="goShots">0</div><div class="stat-lbl">SHOTS MADE</div></div>
+        <div class="stat-block"><div class="stat-num" id="goStreak">0</div><div class="stat-lbl">BEST STREAK</div></div>
+        <div class="stat-block"><div class="stat-num" id="goAccuracy">0%</div><div class="stat-lbl">ACCURACY</div></div>
       </div>
       <div id="starRating" class="star-rating"></div>
       <div id="newRecord" class="new-record" style="display:none">🎉 NEW HIGH SCORE!</div>
@@ -239,6 +211,7 @@
   </div>
 
   <script src="game.js"></script>
+  <script src="clicker.js"></script>
   <script src="audio.js"></script>
 </body>
 </html>
