@@ -190,6 +190,7 @@ function openPack(packId) {
   const pack = PACKS.find(p => p.id === packId);
   if (!pack) return [];
   if (!window.spendCoins(pack.cost)) return null; // null = can't afford
+  if (window.trackDailyProgress) window.trackDailyProgress('packsOpened', 1);
   const results = [];
   for (let i = 0; i < pack.cards; i++) {
     const rarity = rollRarity(pack.odds);
@@ -221,6 +222,7 @@ function buyFromMarket(playerId) {
   const listing = PS.marketListings.find(l => l.id === playerId);
   if (!listing) return false;
   if (!window.spendCoins(listing.price)) return false;
+  if (window.trackDailyProgress) window.trackDailyProgress('marketBuys', 1);
   if (!PS.collection.includes(playerId)) PS.collection.push(playerId);
   PS.marketListings = PS.marketListings.filter(l => l.id !== playerId);
   savePS();

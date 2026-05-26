@@ -21,6 +21,7 @@
         <div class="hub-coins">🪙 <span class="global-coins">0</span></div>
         <button class="btn btn-play" onclick="start3v3()">▶ PLAY 3v3</button>
         <button class="btn btn-play-sm" onclick="showScreen('modeSelect')">🎯 Shooting Practice</button>
+        <button class="btn btn-play-sm" onclick="showScreen('oneVoneScreen')" style="background:rgba(255,140,0,0.15);border-color:rgba(255,140,0,0.4);color:#ff8c00">⚔️ 1v1 Game</button>
       </div>
 
       <!-- Right: feature grid -->
@@ -46,8 +47,28 @@
             <span class="hub-card-label">BALL TYCOON</span>
             <span class="hub-card-sub">Earn coins</span>
           </div>
-          <div class="hub-card" onclick="showScreen('leaderboard')">
+          <div class="hub-card" onclick="showScreen('trainingScreen')">
+            <span class="hub-card-icon">💪</span>
+            <span class="hub-card-label">TRAINING</span>
+            <span class="hub-card-sub">Upgrade player stats</span>
+          </div>
+          <div class="hub-card" onclick="showScreen('challengesScreen')">
+            <span class="hub-card-icon">📋</span>
+            <span class="hub-card-label">CHALLENGES</span>
+            <span class="hub-card-sub">Daily missions</span>
+          </div>
+          <div class="hub-card" onclick="showScreen('tournamentScreen')">
             <span class="hub-card-icon">🏆</span>
+            <span class="hub-card-label">TOURNAMENT</span>
+            <span class="hub-card-sub">Win the bracket</span>
+          </div>
+          <div class="hub-card hub-card-icon-glow" onclick="showScreen('iconStoreScreen')">
+            <span class="hub-card-icon">⭐</span>
+            <span class="hub-card-label">ICON STORE</span>
+            <span class="hub-card-sub">Special player cards</span>
+          </div>
+          <div class="hub-card" onclick="showScreen('leaderboard')">
+            <span class="hub-card-icon">🥇</span>
             <span class="hub-card-label">LEADERBOARD</span>
             <span class="hub-card-sub">Top scores</span>
           </div>
@@ -72,6 +93,9 @@
         <div class="howto-item"><span class="howto-icon">🏆</span><h4>SCORE</h4><p>2pts inside arc, 3pts outside. Combos = bonus!</p></div>
         <div class="howto-item"><span class="howto-icon">✨</span><h4>WISH SHOT</h4><p>Clean swish (no rim touch) = extra bonus + effect</p></div>
         <div class="howto-item"><span class="howto-icon">🏀</span><h4>3v3 GAME</h4><p>WASD move · Space shoot · F pass · Tab switch player</p></div>
+        <div class="howto-item"><span class="howto-icon">💪</span><h4>TRAINING</h4><p>Spend coins to boost your players' stats. Max +15 per stat</p></div>
+        <div class="howto-item"><span class="howto-icon">⚔️</span><h4>1v1 GAME</h4><p>Pick a shot zone, hit the timing bar, and outscore the AI to 21</p></div>
+        <div class="howto-item"><span class="howto-icon">🏆</span><h4>TOURNAMENT</h4><p>Enter bracket, simulate rounds, win prizes &amp; trophies</p></div>
       </div>
       <button class="btn btn-back" onclick="showScreen('splash')">← BACK</button>
     </div>
@@ -169,12 +193,13 @@
     </div>
   </div>
 
-  <!-- ═══════════════════════════ BALL TYCOON ═══════════════════════════ -->
+  <!-- ═══════════════════════════ BALL TYCOON (CLICKER) ═══════════════════════════ -->
   <div id="clickerScreen" class="screen">
     <div class="clicker-layout">
       <div class="clicker-left">
         <button class="btn btn-back clicker-back" onclick="showScreen('splash')">← BACK</button>
         <h2 class="clicker-title">BALL TYCOON</h2>
+        <div class="clicker-prestige" id="prestigeLevel"></div>
         <div class="clicker-coins">
           <span id="clickerCoins">0</span>
           <span class="coin-label">🪙 COINS</span>
@@ -185,12 +210,81 @@
           <div id="clickParticles" class="click-particles"></div>
         </div>
         <div class="clicker-cpc">+<span id="clickerCPC">1</span> per click</div>
-        <div class="clicker-multiplier" id="clickerMult" style="display:none">🔥 <span id="multVal">1</span>x</div>
+        <div class="clicker-multiplier" id="clickerMult" style="display:none">🔥 <span id="multVal">1</span>x MULTIPLIER</div>
+        <div class="clicker-combo" id="clickerCombo" style="display:none"></div>
+        <div class="clicker-actions">
+          <button class="btn-daily-bonus" id="dailyBonusBtn" onclick="claimDailyClickerBonus()">🎁 Claim Daily Bonus</button>
+          <button class="btn-prestige" id="prestigeBtn" onclick="prestigeReset()" style="display:none">⭐ PRESTIGE RESET</button>
+        </div>
+        <div id="milestoneToast" class="milestone-toast" style="display:none"></div>
       </div>
       <div class="clicker-right">
-        <h3 class="upgrade-title">UPGRADES</h3>
+        <h3 class="upgrade-title">UPGRADES <span class="upgrade-count" id="upgradeCount"></span></h3>
         <div id="upgradeList" class="upgrade-list"></div>
       </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ TRAINING CENTER ═══════════════════════════ -->
+  <div id="trainingScreen" class="screen">
+    <div class="fullscreen-panel">
+      <div class="panel-header">
+        <button class="btn btn-back panel-back" onclick="showScreen('splash')">← BACK</button>
+        <h2 class="section-title nm">⚡ TRAINING CENTER</h2>
+        <div class="global-coins-bar">🪙 <span class="global-coins">0</span></div>
+      </div>
+      <div id="trainingContent" class="training-wrap"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ 1v1 GAME ═══════════════════════════ -->
+  <div id="oneVoneScreen" class="screen">
+    <div class="ovo-layout">
+      <div class="panel-header">
+        <button class="btn btn-back panel-back" onclick="exitOVO()">← BACK</button>
+        <h2 class="section-title nm">⚔️ 1v1 GAME</h2>
+        <div class="global-coins-bar">🪙 <span class="global-coins">0</span></div>
+      </div>
+      <div class="ovo-main">
+        <canvas id="ovoCanvas" class="ovo-canvas"></canvas>
+        <div id="ovoControls" class="ovo-controls"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ DAILY CHALLENGES ═══════════════════════════ -->
+  <div id="challengesScreen" class="screen">
+    <div class="fullscreen-panel">
+      <div class="panel-header">
+        <button class="btn btn-back panel-back" onclick="showScreen('splash')">← BACK</button>
+        <h2 class="section-title nm">📋 DAILY CHALLENGES</h2>
+        <div class="global-coins-bar">🪙 <span class="global-coins">0</span></div>
+      </div>
+      <div id="challengesContent" class="challenges-wrap"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ TOURNAMENT ═══════════════════════════ -->
+  <div id="tournamentScreen" class="screen">
+    <div class="fullscreen-panel">
+      <div class="panel-header">
+        <button class="btn btn-back panel-back" onclick="showScreen('splash')">← BACK</button>
+        <h2 class="section-title nm">🏆 TOURNAMENT</h2>
+        <div class="global-coins-bar">🪙 <span class="global-coins">0</span></div>
+      </div>
+      <div id="tournamentContent" class="tournament-wrap"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ ICON STORE ═══════════════════════════ -->
+  <div id="iconStoreScreen" class="screen">
+    <div class="fullscreen-panel">
+      <div class="panel-header">
+        <button class="btn btn-back panel-back" onclick="showScreen('splash')">← BACK</button>
+        <h2 class="section-title nm">⭐ ICON STORE</h2>
+        <div class="global-coins-bar">🪙 <span class="global-coins">0</span></div>
+      </div>
+      <div id="iconStoreContent" class="icon-store-wrap"></div>
     </div>
   </div>
 
@@ -309,5 +403,6 @@
   <script src="clicker.js"></script>
   <script src="audio.js"></script>
   <script src="b3v3.js"></script>
+  <script src="extras.js"></script>
 </body>
 </html>

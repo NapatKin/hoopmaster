@@ -383,6 +383,12 @@ function doScore() {
   updateSidebar();
   updateStreak();
 
+  // Daily challenge tracking
+  if (window.trackDailyProgress) {
+    if (is3pt) window.trackDailyProgress('threePointers', 1);
+    if (STATE.bestStreak >= 5) window.trackDailyProgress('bestStreak', STATE.bestStreak);
+  }
+
   // Particles & FX
   spawnScoreParticles(HOOP.x, HOOP.y, is3pt, isWish);
   if (is3pt || isWish) triggerShake(isWish ? 12 : 8);
@@ -1029,6 +1035,9 @@ function showGameOver() {
   const earned = STATE.coinsEarned || 0;
   if (earned > 0 && window.addCoins) window.addCoins(earned);
   document.getElementById('goCoins').textContent = earned > 0 ? `🪙 +${earned} coins earned!` : '';
+
+  // Track game completion for daily challenges
+  if (window.trackDailyProgress) window.trackDailyProgress('shootGames', 1);
 
   showScreen('gameOver');
 }
