@@ -8,7 +8,7 @@ const STATE = {
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 
-let HOOP = { x: 0, y: 0, rimW: 60, rimH: 8, backboardW: 10, backboardH: 80 };
+let HOOP = { x: 0, y: 0, rimW: 70, rimH: 8, backboardW: 10, backboardH: 80 };
 let BALL_START = { x: 0, y: 0 };
 
 function resizeCanvas() {
@@ -197,7 +197,7 @@ function onPointerDown(e) {
   aimAngle = Math.atan2(HOOP.y - pos.y, HOOP.x - pos.x);
   document.getElementById('powerMeterContainer').style.display = 'block';
   powerInterval = setInterval(() => {
-    currentPower = Math.min(currentPower + 2.2, 100);
+    currentPower = Math.min(currentPower + 1.2, 100);
     document.getElementById('powerBar').style.width = currentPower + '%';
   }, 28);
 }
@@ -219,16 +219,28 @@ function onPointerUp() {
 }
 
 // ===== PHYSICS =====
-const GRAVITY = 0.44;
+const GRAVITY = 0.36;
 let animId = null;
 
 function shootBall() {
   const skill = parseInt(document.getElementById('accuracySlider').value);
-  // At skill 10 = zero spread. At skill 1 = max spread.
-  const maxSpread = skill >= 10 ? 0 : (11 - skill) * 0.055;
+  let maxSpread = skill >= 10 ? 0 : (11 - skill) * 0.055;
+
+  // Trait: hot_hand — streak 3+ halves spread
+  const ap = window.getActivePlayer ? window.getActivePlayer() : null;
+  if (ap) {
+    if (ap.traits.includes('hot_hand') && STATE.streak >= 2) maxSpread *= 0.5;
+    if (ap.traits.includes('quick_release')) maxSpread *= 0.75; // slightly more forgiving
+    if (ap.traits.includes('wind_proof')) STATE.wind = 0;
+    // SHT stat boosts effective accuracy
+    const shtBonus = (ap.stats.sht - 75) / 100; // 0 at 75, +0.25 at 100
+    maxSpread = Math.max(0, maxSpread - shtBonus * 0.04);
+  }
+
   const spread = (Math.random() - 0.5) * maxSpread;
   const speed = 5.5 + currentPower * 0.13;
-  ball.vx = Math.cos(aimAngle + spread) * speed + STATE.wind * 0.008;
+  const windEffect = (ap && ap.traits.includes('wind_proof')) ? 0 : STATE.wind * 0.008;
+  ball.vx = Math.cos(aimAngle + spread) * speed + windEffect;
   ball.vy = Math.sin(aimAngle + spread) * speed;
   ball.flying = true;
   ball.trail = [];
@@ -344,7 +356,6 @@ function checkOutOfBounds() {
 
 function doScore() {
   const isWish = !ball.touchedRim;
-  const rimLeft = HOOP.x - HOOP.rimW / 2;
   const is3pt = ball.x < canvas.width * 0.38;
   let pts = is3pt ? 3 : 2;
   if (isWish) pts += 1;
@@ -356,8 +367,19 @@ function doScore() {
   if (STATE.streak > STATE.bestStreak) STATE.bestStreak = STATE.streak;
   if (STATE.streak >= 3) pts += STATE.streak - 2;
 
+  // ── Trait bonuses ──
+  const ap = window.getActivePlayer ? window.getActivePlayer() : null;
+  if (ap) {
+    if (ap.traits.includes('sharpshooter') && is3pt) { pts += 1; showTraitBanner('🎯 Sharpshooter! +1'); }
+    if (ap.traits.includes('legend_aura')) { pts += 1; }
+    if (ap.traits.includes('floor_general') && window.addCoins) { window.addCoins(5); showTraitBanner('📋 Floor General! +5 🪙'); }
+    if (ap.traits.includes('bank_king') && STATE.miniGame === 'bankShot') { pts += 3; showTraitBanner('🏦 Bank King! +3 bonus'); }
+  }
+
   STATE.score += pts;
   STATE.shotsMade++;
+  STATE.coinsEarned = (STATE.coinsEarned || 0) + pts * 10;
+  document.getElementById('sidebarCoins').textContent = '🪙 ' + STATE.coinsEarned;
   updateSidebar();
   updateStreak();
 
@@ -383,6 +405,18 @@ function doScore() {
 
 function endShot(made) {
   if (!ball.flying) return;
+
+  // magic_touch: rim hits score 45% of the time
+  if (!made && ball.touchedRim) {
+    const ap = window.getActivePlayer ? window.getActivePlayer() : null;
+    if (ap && ap.traits.includes('magic_touch') && Math.random() < 0.45) {
+      ball.scored = true;
+      showTraitBanner('🔮 Magic Touch! Lucky bounce!');
+      doScore();
+      made = true;
+    }
+  }
+
   ball.flying = false;
   if (!made) {
     STATE.streak = 0;
@@ -722,21 +756,29 @@ function drawTrail() {
 
 function drawAimGuide() {
   if (!mouseDown || ball.flying) return;
-  const alpha = 0.12 + currentPower * 0.006;
-  ctx.strokeStyle = `rgba(255,255,255,${alpha})`;
-  ctx.lineWidth = 1.5;
-  ctx.setLineDash([5, 9]);
-  ctx.beginPath();
-  ctx.moveTo(ball.x, ball.y);
-  const len = 70 + currentPower;
-  ctx.lineTo(ball.x + Math.cos(aimAngle) * len, ball.y + Math.sin(aimAngle) * len);
-  ctx.stroke();
-  ctx.setLineDash([]);
 
-  // Power circle
+  // Trajectory arc preview
+  const speed = 5.5 + currentPower * 0.13;
+  let px = ball.x, py = ball.y;
+  let pvx = Math.cos(aimAngle) * speed;
+  let pvy = Math.sin(aimAngle) * speed;
+  for (let i = 0; i < 60; i++) {
+    pvx += STATE.wind * 0.0005;
+    pvy += GRAVITY;
+    px += pvx; py += pvy;
+    if (py > canvas.height || px < 0 || px > canvas.width) break;
+    const alpha = (1 - i / 60) * 0.55;
+    const size = Math.max(0.5, 3.5 - i * 0.05);
+    ctx.beginPath();
+    ctx.arc(px, py, size, 0, Math.PI * 2);
+    ctx.fillStyle = `rgba(255,220,100,${alpha})`;
+    ctx.fill();
+  }
+
+  // Power ring
   ctx.beginPath();
-  ctx.arc(ball.x, ball.y, ball.r + 4 + currentPower * 0.1, 0, Math.PI * 2);
-  ctx.strokeStyle = `rgba(255,140,0,${0.15 + currentPower * 0.005})`;
+  ctx.arc(ball.x, ball.y, ball.r + 5 + currentPower * 0.1, 0, Math.PI * 2);
+  ctx.strokeStyle = `rgba(255,140,0,${0.18 + currentPower * 0.005})`;
   ctx.lineWidth = 2;
   ctx.stroke();
 }
@@ -802,9 +844,19 @@ function showCombo() {
 
 function showBanner(id, text) {
   const el = document.getElementById(id);
+  if (!el) return;
   if (text) el.textContent = text;
   el.style.display = 'block';
   setTimeout(() => { el.style.display = 'none'; }, 2200);
+}
+
+function showTraitBanner(text) {
+  const el = document.getElementById('traitBanner');
+  if (!el) return;
+  el.textContent = text;
+  el.style.display = 'block';
+  clearTimeout(el._t);
+  el._t = setTimeout(() => { el.style.display = 'none'; }, 1800);
 }
 
 // ===== MINI GAMES =====
@@ -824,8 +876,11 @@ function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   if (id === 'leaderboard') populateLeaderboard();
-  if (id === 'splash') { updateSplashStars(); initSplashCanvas(); }
+  if (id === 'splash') { updateSplashStars(); initSplashCanvas(); if(typeof updateCoinsDisplay==='function') updateCoinsDisplay(); }
   if (id === 'gameOver') startConfetti();
+  if (id === 'squadScreen' && typeof renderSquadScreen === 'function') renderSquadScreen();
+  if (id === 'packStore'   && typeof renderPackStore   === 'function') renderPackStore();
+  if (id === 'marketScreen'&& typeof renderMarket      === 'function') renderMarket();
 }
 
 function updateSplashStars() {
@@ -969,6 +1024,12 @@ function showGameOver() {
   const prev = parseInt(localStorage.getItem(hiKey) || '0');
   if (STATE.score > prev) { localStorage.setItem(hiKey, STATE.score); document.getElementById('newRecord').style.display = 'block'; }
   else { document.getElementById('newRecord').style.display = 'none'; }
+
+  // Award coins
+  const earned = STATE.coinsEarned || 0;
+  if (earned > 0 && window.addCoins) window.addCoins(earned);
+  document.getElementById('goCoins').textContent = earned > 0 ? `🪙 +${earned} coins earned!` : '';
+
   showScreen('gameOver');
 }
 
@@ -993,6 +1054,9 @@ function startGame(mode) {
   STATE.mode = mode; STATE.score = 0; STATE.shots = 0; STATE.shotsMade = 0;
   STATE.streak = 0; STATE.bestStreak = 0; STATE.lives = 3;
   STATE.timeLeft = 60; STATE.miniGame = null; STATE.running = true;
+  STATE.coinsEarned = 0;
+  document.getElementById('sidebarCoins').textContent = '🪙 0';
+  if (typeof updateGameSidebarPlayer === 'function') updateGameSidebarPlayer();
   clearInterval(STATE.timerInterval);
   particles.length = 0;
 
