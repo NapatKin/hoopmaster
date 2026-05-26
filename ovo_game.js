@@ -61,17 +61,19 @@ function startOVOGame() {
   OVOG.canvas.addEventListener('mousedown', ovoMouseDown);
   window.addEventListener('resize', ovoResize);
   ovoResize();
-  ovoReset(false);
+  ovoReset(true);
 }
 
 function ovoResize() {
   if (!OVOG.canvas) return;
-  OVOG.canvas.width  = OVOG.canvas.offsetWidth;
-  OVOG.canvas.height = OVOG.canvas.offsetHeight;
-  OVOG.W = OVOG.canvas.width;
-  OVOG.H = OVOG.canvas.height;
-  OVOG.hoopX = OVOG.W / 2;
-  OVOG.hoopY = OVOG.H * 0.13;
+  const w = OVOG.canvas.offsetWidth  || OVOG.canvas.parentElement?.offsetWidth  || 600;
+  const h = OVOG.canvas.offsetHeight || OVOG.canvas.parentElement?.offsetHeight || 480;
+  OVOG.canvas.width  = w;
+  OVOG.canvas.height = h;
+  OVOG.W = w;
+  OVOG.H = h;
+  OVOG.hoopX = w / 2;
+  OVOG.hoopY = h * 0.13;
 }
 
 function ovoReset(newGame) {
@@ -92,10 +94,8 @@ function ovoReset(newGame) {
   OVOG.hasBall = newGame ? 'player' : (OVOG.lastScorer === 'player' ? 'ai' : 'player');
   OVOG.bx = OVOG.px; OVOG.by = OVOG.py;
 
-  if (!newGame || !OVOG.animId) {
-    cancelAnimationFrame(OVOG.animId);
-    OVOG.animId = requestAnimationFrame(ovoLoop);
-  }
+  cancelAnimationFrame(OVOG.animId);
+  OVOG.animId = requestAnimationFrame(ovoLoop);
   renderOVOGameUI();
 }
 
@@ -583,9 +583,9 @@ function drawOVOGHUD(ctx, W, H) {
   // Scoreboard
   const bW = 190, bH = 52, bX = W / 2 - bW / 2, bY = 6;
   ctx.fillStyle = 'rgba(6,5,14,0.82)';
-  ctx.beginPath(); ctx.roundRect(bX, bY, bW, bH, 10); ctx.fill();
+  ctx.fillRect(bX, bY, bW, bH);
   ctx.strokeStyle = 'rgba(255,140,0,0.45)'; ctx.lineWidth = 1;
-  ctx.beginPath(); ctx.roundRect(bX, bY, bW, bH, 10); ctx.stroke();
+  ctx.strokeRect(bX, bY, bW, bH);
 
   ctx.fillStyle = '#ff8c00'; ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'center';
   ctx.fillText('YOU', bX + bW * 0.29, bY + 15);
@@ -602,12 +602,13 @@ function drawOVOGHUD(ctx, W, H) {
   ctx.fillText(`FIRST TO ${OVOG.maxScore}`, W / 2, bY + bH + 9);
 
   // Player/AI OVR
+  const margin = 18;
   const myOVR = OVOG.myPlayer?.ovr ?? '?';
   const aiOVR = OVOG.aiPlayer?.ovr ?? '?';
   ctx.fillStyle = '#ff8c00'; ctx.font = 'bold 9px sans-serif'; ctx.textAlign = 'left';
-  ctx.fillText(`YOU · ${myOVR} OVR`, cm + 4, cm + 14);
+  ctx.fillText(`YOU · ${myOVR} OVR`, margin + 4, margin + 14);
   ctx.fillStyle = '#ff6666'; ctx.textAlign = 'right';
-  ctx.fillText(`${aiOVR} OVR · AI`, W - cm - 4, cm + 14);
+  ctx.fillText(`${aiOVR} OVR · AI`, W - margin - 4, margin + 14);
 
   // Controls
   ctx.fillStyle = 'rgba(255,255,255,0.2)'; ctx.font = '9px sans-serif'; ctx.textAlign = 'center';

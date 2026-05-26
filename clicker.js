@@ -29,9 +29,9 @@ const BALL_SKINS = {
   default: '🏀', fire: '🔥', diamond: '💎', goat: '🐐', crown: '👑'
 };
 
-// Prestige threshold: 1M, 5M, 15M, 40M, 100M...
+// Prestige threshold: 200K, 600K, 1.8M, 5.4M...
 function prestigeThreshold(level) {
-  return Math.floor(1000000 * Math.pow(4, level));
+  return Math.floor(200000 * Math.pow(3, level));
 }
 
 const UPGRADES = [
@@ -117,8 +117,8 @@ function recalcClicker() {
     cps += (u.cpsBonus || 0) * lv;
     if (u.mult && lv > 0) mult *= Math.pow(u.mult, lv);
   });
-  const prestigeMult = Math.pow(2, CLICKER.prestige || 0);
-  if (CLICKER.perks.autoClick) cps += 1;
+  const prestigeMult = Math.pow(3, CLICKER.prestige || 0);
+  if (CLICKER.perks.autoClick) cps += Math.max(1, Math.floor(cpc * 0.3));
   CLICKER.cpc = Math.round(cpc * mult * prestigeMult);
   CLICKER.cps = Math.round(cps * mult * prestigeMult);
   CLICKER.multiplier = mult * prestigeMult;
@@ -172,15 +172,17 @@ function updateClickerUI() {
     }
   }
   const threshold = prestigeThreshold(CLICKER.prestige);
+  const pPct = Math.min(100, Math.floor((CLICKER.totalCoins / threshold) * 100));
+  const canPrestige = CLICKER.totalCoins >= threshold;
   const pBtn = document.getElementById('prestigeBtn');
   if (pBtn) {
-    const canPrestige = CLICKER.totalCoins >= threshold;
-    pBtn.style.display = CLICKER.totalCoins >= 500000 ? '' : 'none';
+    pBtn.style.display = CLICKER.totalCoins >= 10000 ? '' : 'none';
     pBtn.textContent = canPrestige
-      ? `⭐ PRESTIGE #${CLICKER.prestige + 1}`
-      : `⭐ PRESTIGE at ${formatCoins(threshold)} (${Math.floor((CLICKER.totalCoins/threshold)*100)}%)`;
+      ? `⭐ PRESTIGE #${CLICKER.prestige + 1} — READY!`
+      : `⭐ PRESTIGE #${CLICKER.prestige + 1}: ${pPct}% (${formatCoins(CLICKER.totalCoins)}/${formatCoins(threshold)})`;
     pBtn.disabled = !canPrestige;
-    pBtn.style.opacity = canPrestige ? '1' : '0.6';
+    pBtn.style.opacity = canPrestige ? '1' : '0.55';
+    pBtn.style.animation = canPrestige ? 'glowPulse 1.2s ease-in-out infinite' : 'none';
   }
   // Perk shop btn
   const perkBtn = document.getElementById('perkShopBtn');
@@ -280,6 +282,7 @@ function clickBall() {
   if (CLICKER.combo >= 50) earned *= 5;
   else if (CLICKER.combo >= 25) earned *= 3;
   else if (CLICKER.combo >= 10) earned *= 2;
+  if (CLICKER._rushActive) earned = Math.floor(earned * (CLICKER._rushMult || 1));
 
   CLICKER.totalCoins += earned;
   if (window.addCoins) window.addCoins(earned);
@@ -364,31 +367,34 @@ function prestigeReset() {
   const threshold = prestigeThreshold(CLICKER.prestige);
   if (CLICKER.totalCoins < threshold) return;
   const nextLevel = (CLICKER.prestige || 0) + 1;
-  const mult = Math.pow(2, nextLevel);
+  const mult = Math.pow(3, nextLevel);
+  const headStartAmt = CLICKER.perks.headStart ? 200000 : 25000;
   if (!confirm(
-    `PRESTIGE #${nextLevel}\n\n` +
-    `• Upgrades reset, coins reset\n` +
-    `• Permanent ${mult}x ALL earnings (stacks!)\n` +
-    `• +1 Prestige Point to spend in the Perk Shop\n` +
-    `• New threshold: ${formatCoins(prestigeThreshold(nextLevel))}\n\n` +
-    `You've earned ${formatCoins(CLICKER.totalCoins)}. Ready?`
+    `⭐ PRESTIGE #${nextLevel}\n\n` +
+    `• Clicker upgrades reset\n` +
+    `• Permanent ${mult}x ALL clicker earnings!\n` +
+    `• +1 Prestige Point for the Perk Shop\n` +
+    `• +🪙${(headStartAmt).toLocaleString()} coins to start\n` +
+    `• 60-second PRESTIGE RUSH (5x bonus!)\n` +
+    `• Next prestige at ${formatCoins(prestigeThreshold(nextLevel))}\n\n` +
+    `Ready to ascend?`
   )) return;
 
   CLICKER.prestige = nextLevel;
   CLICKER.prestigePoints = (CLICKER.prestigePoints || 0) + 1;
   CLICKER.totalCoins = 0;
   Object.keys(upgradeState).forEach(k => { upgradeState[k].level = 0; });
-  if (window.spendCoins && window.getCoins) window.spendCoins(window.getCoins());
+  // Only remove coins earned by the clicker in this cycle — don't drain global coins from other modes
+  // Just reset the clicker display; global coins remain
 
-  // Head Start perk
-  if (CLICKER.perks.headStart && window.addCoins) {
-    window.addCoins(50000);
-    CLICKER.totalCoins += 50000;
-  }
+  // Head Start — give coins
+  if (window.addCoins) window.addCoins(headStartAmt);
+  CLICKER.totalCoins += headStartAmt;
 
   // Ball auto-upgrades based on prestige (cosmetic)
-  if (nextLevel >= 5 && !CLICKER.perks.skinFire)   { CLICKER.ballSkin = 'fire'; }
-  if (nextLevel >= 10 && !CLICKER.perks.skinDiamond) { CLICKER.ballSkin = 'diamond'; }
+  if (nextLevel >= 3 && !CLICKER.perks.skinFire)    CLICKER.ballSkin = 'fire';
+  if (nextLevel >= 6 && !CLICKER.perks.skinDiamond) CLICKER.ballSkin = 'diamond';
+  if (nextLevel >= 9 && !CLICKER.perks.skinGoat)    CLICKER.ballSkin = 'goat';
 
   recalcClicker();
   updateClickerUI();
@@ -397,13 +403,30 @@ function prestigeReset() {
   saveClicker();
   playSound('score');
 
+  // Prestige Rush: 5x multiplier for 60 seconds
+  CLICKER._rushActive = true;
+  CLICKER._rushMult = 5;
+  const rushEl = document.getElementById('prestigeRushBanner');
+  if (rushEl) { rushEl.style.display = ''; rushEl.textContent = '🚀 PRESTIGE RUSH! 5x for 60s'; }
+  let rushSeconds = 60;
+  const rushInterval = setInterval(() => {
+    rushSeconds--;
+    if (rushEl) rushEl.textContent = `🚀 PRESTIGE RUSH! 5x — ${rushSeconds}s`;
+    if (rushSeconds <= 0) {
+      clearInterval(rushInterval);
+      CLICKER._rushActive = false;
+      CLICKER._rushMult = 1;
+      if (rushEl) rushEl.style.display = 'none';
+    }
+  }, 1000);
+
   // Dramatic flash
   const ballEl = document.getElementById('clickerBall');
   if (ballEl) {
-    ballEl.style.filter = 'drop-shadow(0 0 40px gold)';
-    setTimeout(() => { ballEl.style.filter = ''; }, 2000);
+    ballEl.style.filter = 'drop-shadow(0 0 60px gold) drop-shadow(0 0 120px orange)';
+    setTimeout(() => { ballEl.style.filter = ''; }, 3000);
   }
-  showMilestoneToast({ icon: '⭐', text: `PRESTIGE #${nextLevel}! ${mult}x earnings forever!` });
+  showMilestoneToast({ icon: '⭐', text: `PRESTIGE #${nextLevel}! ${mult}x + RUSH!` });
 }
 window.prestigeReset = prestigeReset;
 
@@ -529,7 +552,8 @@ function startClickerLoop() {
   CLICKER.interval = setInterval(() => {
     if (!document.getElementById('clickerScreen')?.classList.contains('active')) return;
     if (CLICKER.cps > 0) {
-      const earned = CLICKER.cps / 10;
+      const rushMult = CLICKER._rushActive ? (CLICKER._rushMult || 1) : 1;
+      const earned = (CLICKER.cps / 10) * rushMult;
       CLICKER.totalCoins += earned;
       if (window.addCoins) window.addCoins(earned);
       if (window.trackDailyProgress) window.trackDailyProgress('clickerEarned', earned);
