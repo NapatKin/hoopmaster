@@ -17,7 +17,8 @@
       <p class="tagline">Build your squad. Rule the court.</p>
       <div class="global-coins-bar">🪙 <span class="global-coins">0</span></div>
       <div class="menu-buttons">
-        <button class="btn btn-primary glow-btn" onclick="showScreen('modeSelect')">▶ PLAY</button>
+        <button class="btn btn-primary glow-btn" onclick="start3v3()">🏀 3v3 BASKETBALL</button>
+        <button class="btn btn-secondary" onclick="showScreen('modeSelect')">🎯 SHOOTING PRACTICE</button>
         <button class="btn btn-squad" onclick="showScreen('squadScreen')">👥 MY SQUAD</button>
         <button class="btn btn-secondary" onclick="showScreen('packStore')">📦 PACK STORE</button>
         <button class="btn btn-secondary" onclick="showScreen('marketScreen')">📈 MARKET</button>
@@ -252,9 +253,21 @@
     </div>
   </div>
 
+  <!-- 3v3 GAME SCREEN -->
+  <div id="game3v3" class="screen">
+    <div class="game3v3-layout">
+      <canvas id="canvas3v3" class="canvas3v3"></canvas>
+      <div class="btn-3v3-overlay">
+        <button id="btn3v3Back"  class="btn btn-secondary" style="display:none" onclick="cancelAnimationFrame(G3.animId);showScreen('splash')">← MAIN MENU</button>
+        <button id="btn3v3Again" class="btn btn-primary"   style="display:none" onclick="start3v3()">PLAY AGAIN</button>
+      </div>
+    </div>
+  </div>
+
   <script src="players.js"></script>
   <script src="game.js"></script>
   <script src="clicker.js"></script>
   <script src="audio.js"></script>
+  <script src="b3v3.js"></script>
 </body>
 </html>

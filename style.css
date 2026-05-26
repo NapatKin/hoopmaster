@@ -322,6 +322,11 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI
 /* TRAIT BANNER */
 .trait-banner { position: absolute; top: 100px; left: 50%; transform: translateX(-50%); background: rgba(80,0,160,0.92); color: #d090ff; padding: 8px 24px; border-radius: 20px; font-size: 13px; font-weight: 800; letter-spacing: 2px; z-index: 41; border: 1px solid rgba(168,85,247,0.5); box-shadow: 0 4px 30px rgba(120,0,255,0.4); animation: bannerIn 0.35s ease; }
 
+/* ===== 3v3 GAME ===== */
+.game3v3-layout { width:100vw; height:100vh; position:relative; background:#08060f; }
+.canvas3v3 { display:block; width:100%; height:100%; }
+.btn-3v3-overlay { position:absolute; bottom:30px; left:50%; transform:translateX(-50%); display:flex; gap:14px; z-index:20; }
+
 /* ===== RESPONSIVE ===== */
 @media (max-width: 640px) {
   .sidebar { width: 150px; }
