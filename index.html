@@ -8,31 +8,79 @@
 </head>
 <body>
 
-  <!-- SPLASH -->
+  <!-- ═══════════════════════════ SPLASH / HUB ═══════════════════════════ -->
   <div id="splash" class="screen active">
     <canvas id="splashCanvas" class="splash-canvas"></canvas>
-    <div class="splash-content">
-      <div class="ball-bounce">🏀</div>
-      <h1 class="game-title">HOOP<span>MASTER</span></h1>
-      <p class="tagline">Build your squad. Rule the court.</p>
-      <div class="global-coins-bar">🪙 <span class="global-coins">0</span></div>
-      <div class="menu-buttons">
-        <button class="btn btn-primary glow-btn" onclick="start3v3()">🏀 3v3 BASKETBALL</button>
-        <button class="btn btn-secondary" onclick="showScreen('modeSelect')">🎯 SHOOTING PRACTICE</button>
-        <button class="btn btn-squad" onclick="showScreen('squadScreen')">👥 MY SQUAD</button>
-        <button class="btn btn-secondary" onclick="showScreen('packStore')">📦 PACK STORE</button>
-        <button class="btn btn-secondary" onclick="showScreen('marketScreen')">📈 MARKET</button>
-        <button class="btn btn-secondary" onclick="showScreen('clickerScreen')">🏀 BALL TYCOON</button>
-        <button class="btn btn-secondary" onclick="showScreen('leaderboard')">🏆 LEADERBOARD</button>
+    <div class="hub-layout">
+
+      <!-- Left: branding -->
+      <div class="hub-left">
+        <div class="hub-ball">🏀</div>
+        <h1 class="game-title">HOOP<span>MASTER</span></h1>
+        <p class="tagline">Build your squad.<br>Rule the court.</p>
+        <div class="hub-coins">🪙 <span class="global-coins">0</span></div>
+        <button class="btn btn-play" onclick="start3v3()">▶ PLAY 3v3</button>
+        <button class="btn btn-play-sm" onclick="showScreen('modeSelect')">🎯 Shooting Practice</button>
+      </div>
+
+      <!-- Right: feature grid -->
+      <div class="hub-right">
+        <div class="hub-grid">
+          <div class="hub-card" onclick="showScreen('squadScreen')">
+            <span class="hub-card-icon">👥</span>
+            <span class="hub-card-label">MY SQUAD</span>
+            <span class="hub-card-sub">Build your team</span>
+          </div>
+          <div class="hub-card" onclick="showScreen('packStore')">
+            <span class="hub-card-icon">📦</span>
+            <span class="hub-card-label">PACK STORE</span>
+            <span class="hub-card-sub">Open player packs</span>
+          </div>
+          <div class="hub-card" onclick="showScreen('marketScreen')">
+            <span class="hub-card-icon">📈</span>
+            <span class="hub-card-label">MARKET</span>
+            <span class="hub-card-sub">Buy &amp; sell players</span>
+          </div>
+          <div class="hub-card" onclick="showScreen('clickerScreen')">
+            <span class="hub-card-icon">💰</span>
+            <span class="hub-card-label">BALL TYCOON</span>
+            <span class="hub-card-sub">Earn coins</span>
+          </div>
+          <div class="hub-card" onclick="showScreen('leaderboard')">
+            <span class="hub-card-icon">🏆</span>
+            <span class="hub-card-label">LEADERBOARD</span>
+            <span class="hub-card-sub">Top scores</span>
+          </div>
+          <div class="hub-card hub-card-howto" onclick="showScreen('howToPlay')">
+            <span class="hub-card-icon">❓</span>
+            <span class="hub-card-label">HOW TO PLAY</span>
+            <span class="hub-card-sub">Controls &amp; rules</span>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 
-  <!-- MODE SELECT -->
-  <div id="modeSelect" class="screen">
-    <canvas id="splashCanvas2" class="splash-canvas"></canvas>
-    <div class="mode-content">
-      <h2 class="section-title">SELECT MODE</h2>
+  <!-- ═══════════════════════════ HOW TO PLAY ═══════════════════════════ -->
+  <div id="howToPlay" class="screen scroll-screen">
+    <div class="inner-wrap">
+      <h2 class="section-title">HOW TO PLAY</h2>
+      <div class="howto-grid">
+        <div class="howto-item"><span class="howto-icon">🖱️</span><h4>AIM</h4><p>Click and hold anywhere to aim toward the hoop</p></div>
+        <div class="howto-item"><span class="howto-icon">⚡</span><h4>POWER</h4><p>Hold longer to build power, release to shoot</p></div>
+        <div class="howto-item"><span class="howto-icon">🎯</span><h4>ACCURACY</h4><p>Adjust accuracy slider — max skill = perfect aim</p></div>
+        <div class="howto-item"><span class="howto-icon">🏆</span><h4>SCORE</h4><p>2pts inside arc, 3pts outside. Combos = bonus!</p></div>
+        <div class="howto-item"><span class="howto-icon">✨</span><h4>WISH SHOT</h4><p>Clean swish (no rim touch) = extra bonus + effect</p></div>
+        <div class="howto-item"><span class="howto-icon">🏀</span><h4>3v3 GAME</h4><p>WASD move · Space shoot · F pass · Tab switch player</p></div>
+      </div>
+      <button class="btn btn-back" onclick="showScreen('splash')">← BACK</button>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ MODE SELECT ═══════════════════════════ -->
+  <div id="modeSelect" class="screen scroll-screen">
+    <div class="inner-wrap">
+      <h2 class="section-title">SHOOTING PRACTICE</h2>
       <div class="mode-grid">
         <div class="mode-card" onclick="startGame('classic')">
           <div class="mode-icon">🏀</div><h3>CLASSIC</h3>
@@ -55,26 +103,25 @@
     </div>
   </div>
 
-  <!-- LEADERBOARD -->
-  <div id="leaderboard" class="screen">
-    <div class="howto-content">
+  <!-- ═══════════════════════════ LEADERBOARD ═══════════════════════════ -->
+  <div id="leaderboard" class="screen scroll-screen">
+    <div class="inner-wrap">
       <h2 class="section-title">LEADERBOARD</h2>
       <div id="leaderboardList" class="leaderboard-list"></div>
       <button class="btn btn-back" onclick="showScreen('splash')">← BACK</button>
     </div>
   </div>
 
-  <!-- MY SQUAD -->
+  <!-- ═══════════════════════════ MY SQUAD ═══════════════════════════ -->
   <div id="squadScreen" class="screen">
     <div class="fullscreen-panel">
       <div class="panel-header">
         <button class="btn btn-back panel-back" onclick="showScreen('splash')">← BACK</button>
-        <h2 class="section-title" style="margin:0">MY SQUAD</h2>
+        <h2 class="section-title nm">MY SQUAD</h2>
         <div class="global-coins-bar">🪙 <span class="global-coins">0</span></div>
       </div>
       <div id="squadContent" class="squad-wrap"></div>
     </div>
-    <!-- Player picker modal -->
     <div id="playerPicker" class="picker-modal" style="display:none">
       <div class="picker-inner">
         <button class="picker-close" onclick="document.getElementById('playerPicker').style.display='none'">✕</button>
@@ -83,21 +130,21 @@
     </div>
   </div>
 
-  <!-- PACK STORE -->
+  <!-- ═══════════════════════════ PACK STORE ═══════════════════════════ -->
   <div id="packStore" class="screen">
     <div class="fullscreen-panel">
       <div class="panel-header">
         <button class="btn btn-back panel-back" onclick="showScreen('splash')">← BACK</button>
-        <h2 class="section-title" style="margin:0">PACK STORE</h2>
+        <h2 class="section-title nm">PACK STORE</h2>
         <div class="global-coins-bar">🪙 <span class="global-coins">0</span></div>
       </div>
       <div id="packStoreContent" class="pack-store-wrap"></div>
     </div>
   </div>
 
-  <!-- PACK OPENING -->
-  <div id="packOpening" class="screen">
-    <div class="pack-opening-wrap">
+  <!-- ═══════════════════════════ PACK OPENING ═══════════════════════════ -->
+  <div id="packOpening" class="screen scroll-screen">
+    <div class="inner-wrap" style="text-align:center">
       <h2 class="section-title">PACK OPENING</h2>
       <div id="packOpenCards" class="pack-open-cards"></div>
       <div class="pack-open-btns">
@@ -107,13 +154,13 @@
     </div>
   </div>
 
-  <!-- MARKET -->
+  <!-- ═══════════════════════════ MARKET ═══════════════════════════ -->
   <div id="marketScreen" class="screen">
     <div class="fullscreen-panel">
       <div class="panel-header">
         <button class="btn btn-back panel-back" onclick="showScreen('splash')">← BACK</button>
-        <h2 class="section-title" style="margin:0">PLAYER MARKET</h2>
-        <div style="display:flex;align-items:center;gap:12px">
+        <h2 class="section-title nm">PLAYER MARKET</h2>
+        <div style="display:flex;align-items:center;gap:10px;margin-left:auto">
           <div class="global-coins-bar">🪙 <span class="global-coins">0</span></div>
           <button class="sqbtn" onclick="refreshMarket();renderMarket()">🔄 Refresh</button>
         </div>
@@ -122,7 +169,7 @@
     </div>
   </div>
 
-  <!-- CLICKER -->
+  <!-- ═══════════════════════════ BALL TYCOON ═══════════════════════════ -->
   <div id="clickerScreen" class="screen">
     <div class="clicker-layout">
       <div class="clicker-left">
@@ -147,18 +194,15 @@
     </div>
   </div>
 
-  <!-- GAME SCREEN -->
+  <!-- ═══════════════════════════ SHOOTING GAME ═══════════════════════════ -->
   <div id="gameScreen" class="screen">
     <div class="game-layout">
       <aside class="sidebar">
         <div class="sidebar-header"><span>🏀</span><span>HoopMaster</span></div>
-
-        <!-- Active player card -->
         <div class="sidebar-section">
           <div class="sidebar-label">ACTIVE PLAYER</div>
           <div id="sidebarPlayerCard"></div>
         </div>
-
         <div class="sidebar-section">
           <div class="sidebar-label">MODE</div>
           <div class="sidebar-value" id="sidebarMode">Classic</div>
@@ -191,7 +235,6 @@
           <div class="sidebar-label">ACCURACY</div>
           <div class="sidebar-value" id="sidebarAccPct">—</div>
         </div>
-
         <hr class="sidebar-divider" />
         <div class="sidebar-section">
           <div class="sidebar-label">ACCURACY SKILL</div>
@@ -202,7 +245,6 @@
           <div class="sidebar-label">WIND</div>
           <div class="wind-display" id="windDisplay">— calm</div>
         </div>
-
         <hr class="sidebar-divider" />
         <div class="sidebar-section">
           <div class="sidebar-label">MINI-GAMES</div>
@@ -210,10 +252,8 @@
           <button class="mini-btn" onclick="triggerMiniGame('bankShot')">🏦 Bank Shot +5</button>
           <button class="mini-btn" onclick="triggerMiniGame('alleyOop')">🚀 Alley-Oop +3</button>
         </div>
-
         <button class="btn btn-back sidebar-quit" onclick="quitGame()">✕ QUIT</button>
       </aside>
-
       <main class="game-main">
         <canvas id="gameCanvas"></canvas>
         <div id="powerMeterContainer" class="power-meter-container" style="display:none">
@@ -230,7 +270,7 @@
     </div>
   </div>
 
-  <!-- GAME OVER -->
+  <!-- ═══════════════════════════ GAME OVER ═══════════════════════════ -->
   <div id="gameOver" class="screen">
     <canvas id="confettiCanvas" class="confetti-canvas"></canvas>
     <div class="gameover-content">
@@ -253,13 +293,13 @@
     </div>
   </div>
 
-  <!-- 3v3 GAME SCREEN -->
+  <!-- ═══════════════════════════ 3v3 GAME ═══════════════════════════ -->
   <div id="game3v3" class="screen">
     <div class="game3v3-layout">
       <canvas id="canvas3v3" class="canvas3v3"></canvas>
       <div class="btn-3v3-overlay">
         <button id="btn3v3Back"  class="btn btn-secondary" style="display:none" onclick="cancelAnimationFrame(G3.animId);showScreen('splash')">← MAIN MENU</button>
-        <button id="btn3v3Again" class="btn btn-primary"   style="display:none" onclick="start3v3()">PLAY AGAIN</button>
+        <button id="btn3v3Again" class="btn btn-primary"   style="display:none" onclick="start3v3()">▶ PLAY AGAIN</button>
       </div>
     </div>
   </div>
