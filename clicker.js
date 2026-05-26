@@ -5,11 +5,34 @@ const CLICKER = {
   cps: 0,
   multiplier: 1,
   prestige: 0,
+  prestigePoints: 0,    // spend in perk shop
+  perks: {},            // { autoClick: true, goldenRush: true, discount: true, headStart: true }
+  ballSkin: 'default',  // default | fire | diamond | goat | crown
   interval: null,
   clicks: 0,
   combo: 0,
   comboTimer: null,
 };
+
+const PRESTIGE_PERKS = [
+  { id: 'autoClick',   icon: '🤖', name: 'Auto-Clicker',    cost: 1, desc: '1 free click per second automatically' },
+  { id: 'goldenRush',  icon: '✨', name: 'Golden Rush',     cost: 1, desc: 'Golden balls appear twice as often' },
+  { id: 'discount',    icon: '🏷️', name: 'Bulk Deal',       cost: 2, desc: 'All upgrade costs -25%' },
+  { id: 'headStart',   icon: '🚀', name: 'Head Start',      cost: 2, desc: 'Start with 50,000 coins after each prestige' },
+  { id: 'skinFire',    icon: '🔥', name: 'Fire Ball',       cost: 1, desc: 'Unlock the blazing fire ball skin', skin: 'fire' },
+  { id: 'skinDiamond', icon: '💎', name: 'Diamond Ball',    cost: 2, desc: 'Unlock the diamond ball skin', skin: 'diamond' },
+  { id: 'skinGoat',    icon: '🐐', name: 'GOAT Ball',       cost: 3, desc: 'The legendary GOAT ball skin', skin: 'goat' },
+  { id: 'skinCrown',   icon: '👑', name: 'Crown Ball',      cost: 4, desc: 'The ultimate king of all skins', skin: 'crown' },
+];
+
+const BALL_SKINS = {
+  default: '🏀', fire: '🔥', diamond: '💎', goat: '🐐', crown: '👑'
+};
+
+// Prestige threshold: 1M, 5M, 15M, 40M, 100M...
+function prestigeThreshold(level) {
+  return Math.floor(1000000 * Math.pow(4, level));
+}
 
 const UPGRADES = [
   // --- Click upgrades ---
@@ -57,16 +80,16 @@ UPGRADES.forEach(u => { upgradeState[u.id] = { level: 0 }; });
 function loadClicker() {
   const saved = JSON.parse(localStorage.getItem('clicker') || 'null');
   if (saved) {
-    CLICKER.totalCoins = saved.totalCoins || 0;
-    CLICKER.prestige   = saved.prestige   || 0;
-    CLICKER.clicks     = saved.clicks     || 0;
+    CLICKER.totalCoins     = saved.totalCoins     || 0;
+    CLICKER.prestige       = saved.prestige       || 0;
+    CLICKER.prestigePoints = saved.prestigePoints || 0;
+    CLICKER.perks          = saved.perks          || {};
+    CLICKER.ballSkin       = saved.ballSkin       || 'default';
+    CLICKER.clicks         = saved.clicks         || 0;
     Object.keys(saved.upgrades || {}).forEach(k => {
       if (upgradeState[k]) upgradeState[k].level = saved.upgrades[k];
     });
-    // Backwards-compat: merge old session coins into global
-    if (saved.coins && window.addCoins) {
-      window.addCoins(saved.coins);
-    }
+    if (saved.coins && window.addCoins) window.addCoins(saved.coins);
   }
   recalcClicker();
 }
@@ -77,6 +100,9 @@ function saveClicker() {
   localStorage.setItem('clicker', JSON.stringify({
     totalCoins: CLICKER.totalCoins,
     prestige:   CLICKER.prestige,
+    prestigePoints: CLICKER.prestigePoints,
+    perks:      CLICKER.perks,
+    ballSkin:   CLICKER.ballSkin,
     clicks:     CLICKER.clicks,
     upgrades
   }));
@@ -92,6 +118,7 @@ function recalcClicker() {
     if (u.mult && lv > 0) mult *= Math.pow(u.mult, lv);
   });
   const prestigeMult = Math.pow(2, CLICKER.prestige || 0);
+  if (CLICKER.perks.autoClick) cps += 1;
   CLICKER.cpc = Math.round(cpc * mult * prestigeMult);
   CLICKER.cps = Math.round(cps * mult * prestigeMult);
   CLICKER.multiplier = mult * prestigeMult;
@@ -99,7 +126,8 @@ function recalcClicker() {
 
 function getUpgradeCost(upgrade) {
   const lv = upgradeState[upgrade.id]?.level || 0;
-  return Math.floor(upgrade.cost * Math.pow(1.55, lv));
+  const discount = CLICKER.perks.discount ? 0.75 : 1;
+  return Math.floor(upgrade.cost * Math.pow(1.55, lv) * discount);
 }
 
 // ===== FORMAT =====
@@ -129,14 +157,37 @@ function updateClickerUI() {
     multVal.textContent = CLICKER.multiplier.toFixed(1);
   }
 
+  // Ball skin
+  const ballEl2 = document.getElementById('clickerBall');
+  if (ballEl2) ballEl2.textContent = BALL_SKINS[CLICKER.ballSkin] || '🏀';
+
   // Prestige
   const prestigeEl = document.getElementById('prestigeLevel');
   if (prestigeEl) {
-    prestigeEl.textContent = CLICKER.prestige > 0 ? `⭐ Prestige ${CLICKER.prestige}` : '';
+    if (CLICKER.prestige > 0) {
+      const pp = CLICKER.prestigePoints;
+      prestigeEl.innerHTML = `⭐ Prestige <strong>${CLICKER.prestige}</strong>${pp > 0 ? ` &nbsp;<span class="prestige-pp" title="Prestige Points">${pp}PP</span>` : ''}`;
+    } else {
+      prestigeEl.textContent = '';
+    }
   }
+  const threshold = prestigeThreshold(CLICKER.prestige);
   const pBtn = document.getElementById('prestigeBtn');
   if (pBtn) {
-    pBtn.style.display = CLICKER.totalCoins >= 1000000 ? '' : 'none';
+    const canPrestige = CLICKER.totalCoins >= threshold;
+    pBtn.style.display = CLICKER.totalCoins >= 500000 ? '' : 'none';
+    pBtn.textContent = canPrestige
+      ? `⭐ PRESTIGE #${CLICKER.prestige + 1}`
+      : `⭐ PRESTIGE at ${formatCoins(threshold)} (${Math.floor((CLICKER.totalCoins/threshold)*100)}%)`;
+    pBtn.disabled = !canPrestige;
+    pBtn.style.opacity = canPrestige ? '1' : '0.6';
+  }
+  // Perk shop btn
+  const perkBtn = document.getElementById('perkShopBtn');
+  if (perkBtn) {
+    perkBtn.style.display = CLICKER.prestige > 0 ? '' : 'none';
+    const pp = CLICKER.prestigePoints;
+    perkBtn.textContent = `🎁 Perk Shop (${pp}PP)`;
   }
 
   // Daily bonus
@@ -310,29 +361,116 @@ window.claimDailyClickerBonus = claimDailyClickerBonus;
 
 // ===== PRESTIGE =====
 function prestigeReset() {
-  if (CLICKER.totalCoins < 1000000) return;
-  if (!confirm(`Prestige #${(CLICKER.prestige || 0) + 1}?\n\nThis resets your coins and upgrades but grants a permanent 2x bonus on all future earnings!\n\nCurrent total earned: ${formatCoins(CLICKER.totalCoins)}`)) return;
-  CLICKER.prestige = (CLICKER.prestige || 0) + 1;
+  const threshold = prestigeThreshold(CLICKER.prestige);
+  if (CLICKER.totalCoins < threshold) return;
+  const nextLevel = (CLICKER.prestige || 0) + 1;
+  const mult = Math.pow(2, nextLevel);
+  if (!confirm(
+    `PRESTIGE #${nextLevel}\n\n` +
+    `• Upgrades reset, coins reset\n` +
+    `• Permanent ${mult}x ALL earnings (stacks!)\n` +
+    `• +1 Prestige Point to spend in the Perk Shop\n` +
+    `• New threshold: ${formatCoins(prestigeThreshold(nextLevel))}\n\n` +
+    `You've earned ${formatCoins(CLICKER.totalCoins)}. Ready?`
+  )) return;
+
+  CLICKER.prestige = nextLevel;
+  CLICKER.prestigePoints = (CLICKER.prestigePoints || 0) + 1;
   CLICKER.totalCoins = 0;
-  // Reset upgrade levels
   Object.keys(upgradeState).forEach(k => { upgradeState[k].level = 0; });
-  // Spend all global coins (reset them for prestige drama)
-  if (window.spendCoins && window.getCoins) {
-    window.spendCoins(window.getCoins());
+  if (window.spendCoins && window.getCoins) window.spendCoins(window.getCoins());
+
+  // Head Start perk
+  if (CLICKER.perks.headStart && window.addCoins) {
+    window.addCoins(50000);
+    CLICKER.totalCoins += 50000;
   }
+
+  // Ball auto-upgrades based on prestige (cosmetic)
+  if (nextLevel >= 5 && !CLICKER.perks.skinFire)   { CLICKER.ballSkin = 'fire'; }
+  if (nextLevel >= 10 && !CLICKER.perks.skinDiamond) { CLICKER.ballSkin = 'diamond'; }
+
   recalcClicker();
   updateClickerUI();
   renderUpgrades();
+  renderPerkShop();
   saveClicker();
   playSound('score');
+
+  // Dramatic flash
+  const ballEl = document.getElementById('clickerBall');
+  if (ballEl) {
+    ballEl.style.filter = 'drop-shadow(0 0 40px gold)';
+    setTimeout(() => { ballEl.style.filter = ''; }, 2000);
+  }
+  showMilestoneToast({ icon: '⭐', text: `PRESTIGE #${nextLevel}! ${mult}x earnings forever!` });
 }
 window.prestigeReset = prestigeReset;
+
+// ===== PERK SHOP =====
+function renderPerkShop() {
+  const el = document.getElementById('perkShopContent');
+  if (!el) return;
+  const pp = CLICKER.prestigePoints || 0;
+  el.innerHTML = `
+  <div class="perk-shop-header">🎁 Perk Shop &nbsp;<span class="perk-pp-badge">${pp} PP available</span></div>
+  <div class="perk-shop-grid">
+    ${PRESTIGE_PERKS.map(p => {
+      const owned = CLICKER.perks[p.id];
+      const canAfford = pp >= p.cost;
+      const isSkin = !!p.skin;
+      const activeSkin = isSkin && CLICKER.ballSkin === p.skin;
+      return `
+      <div class="perk-card ${owned ? 'perk-owned' : ''} ${activeSkin ? 'perk-active-skin' : ''}">
+        <div class="perk-icon">${p.icon}</div>
+        <div class="perk-name">${p.name}</div>
+        <div class="perk-desc">${p.desc}</div>
+        <div class="perk-cost">${p.cost} PP</div>
+        ${owned
+          ? (isSkin
+            ? `<button class="perk-btn perk-btn-equip" onclick="perkEquipSkin('${p.skin}')">${activeSkin ? '✅ Equipped' : 'Equip'}</button>`
+            : '<div class="perk-owned-label">✅ OWNED</div>')
+          : `<button class="perk-btn ${canAfford ? '' : 'perk-btn-locked'}" onclick="perkBuy('${p.id}')" ${canAfford ? '' : 'disabled'}>${canAfford ? 'BUY' : 'Need ' + p.cost + ' PP'}</button>`
+        }
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+window.perkBuy = function(id) {
+  const perk = PRESTIGE_PERKS.find(p => p.id === id);
+  if (!perk || CLICKER.perks[id]) return;
+  if ((CLICKER.prestigePoints || 0) < perk.cost) { alert('Not enough Prestige Points!'); return; }
+  CLICKER.prestigePoints -= perk.cost;
+  CLICKER.perks[id] = true;
+  if (perk.skin) CLICKER.ballSkin = perk.skin;
+  recalcClicker();
+  updateClickerUI();
+  renderPerkShop();
+  saveClicker();
+};
+
+window.perkEquipSkin = function(skin) {
+  CLICKER.ballSkin = skin;
+  updateClickerUI();
+  saveClicker();
+  renderPerkShop();
+};
+
+window.togglePerkShop = function() {
+  const modal = document.getElementById('perkShopModal');
+  if (!modal) return;
+  const isOpen = modal.style.display !== 'none';
+  modal.style.display = isOpen ? 'none' : 'block';
+  if (!isOpen) renderPerkShop();
+};
 
 // ===== GOLDEN BALL =====
 let _gbActive = false;
 function scheduleGoldenBall() {
-  const delay = 30000 + Math.random() * 60000;
-  setTimeout(showGoldenBall, delay);
+  const base = CLICKER.perks?.goldenRush ? 15000 : 30000;
+  const spread = CLICKER.perks?.goldenRush ? 20000 : 60000;
+  setTimeout(showGoldenBall, base + Math.random() * spread);
 }
 
 function showGoldenBall() {
@@ -409,6 +547,7 @@ window.showScreen = function(id) {
     loadClicker();
     renderUpgrades();
     updateClickerUI();
+    renderPerkShop();
     startClickerLoop();
   }
 };

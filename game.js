@@ -1115,5 +1115,63 @@ function quitGame() {
 
 function restartGame() { startGame(STATE.mode); }
 
+// ===== PAUSE SYSTEM =====
+let _pausedScreen = null;
+let _gamePaused = false;
+
+window.resumeGame = function() {
+  _gamePaused = false;
+  const overlay = document.getElementById('pauseOverlay');
+  if (overlay) overlay.style.display = 'none';
+  // Resume whichever game was active
+  if (_pausedScreen === 'gameScreen' && STATE.running) {
+    STATE.running = true;
+    animId = requestAnimationFrame(gameLoop);
+  }
+  if (_pausedScreen === 'game3v3' && typeof G3 !== 'undefined' && typeof loop3 === 'function') {
+    G3.running = true;
+    G3.animId = requestAnimationFrame(loop3);
+  }
+  if (_pausedScreen === 'oneVoneScreen' && window.resumeOVOGame) {
+    window.resumeOVOGame();
+  }
+};
+
+window.quitToMenu = function() {
+  _gamePaused = false;
+  const overlay = document.getElementById('pauseOverlay');
+  if (overlay) overlay.style.display = 'none';
+  if (_pausedScreen === 'gameScreen') quitGame();
+  else if (_pausedScreen === 'game3v3') { cancelAnimationFrame(G3?.animId); showScreen('splash'); }
+  else if (_pausedScreen === 'oneVoneScreen') { if (window.stopOVOGame) stopOVOGame(); showScreen('splash'); }
+  else showScreen('splash');
+};
+
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  const activeScreen = document.querySelector('.screen.active');
+  const screenId = activeScreen?.id;
+  const pausableScreens = ['gameScreen', 'game3v3', 'oneVoneScreen'];
+  if (!pausableScreens.includes(screenId)) return;
+
+  const overlay = document.getElementById('pauseOverlay');
+  if (!overlay) return;
+
+  if (_gamePaused) {
+    window.resumeGame();
+    return;
+  }
+
+  _gamePaused = true;
+  _pausedScreen = screenId;
+
+  // Pause the active game
+  if (screenId === 'gameScreen') { STATE.running = false; cancelAnimationFrame(animId); }
+  if (screenId === 'game3v3' && typeof G3 !== 'undefined') { G3.running = false; cancelAnimationFrame(G3.animId); }
+  if (screenId === 'oneVoneScreen' && window.pauseOVOGame) window.pauseOVOGame();
+
+  overlay.style.display = 'flex';
+});
+
 // Init splash on load
 window.addEventListener('load', () => { initSplashCanvas(); updateSplashStars(); });
