@@ -210,14 +210,17 @@ function start3v3() {
   G3.coinsEarned = 0;
   FX.length = 0;
 
-  recalcCourt3();
-  buildTeams();
-  tipOff();
-  repositionPlayers();
   cancelAnimationFrame(G3.animId);
-  G3.animId = requestAnimationFrame(loop3);
-
   showScreen('game3v3');
+
+  // Wait for canvas to be visible before reading its dimensions
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    recalcCourt3();
+    buildTeams();
+    tipOff();
+    repositionPlayers();
+    G3.animId = requestAnimationFrame(loop3);
+  }));
 }
 
 function repositionPlayers() {
