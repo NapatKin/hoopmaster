@@ -918,6 +918,54 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI
 .hub-card-manager:hover { border-color:rgba(0,180,120,0.6) !important; box-shadow:0 10px 40px rgba(0,180,120,0.2) !important; }
 .hub-card-career { border-color:rgba(0,212,255,0.25) !important; }
 .hub-card-career:hover { border-color:rgba(0,212,255,0.6) !important; box-shadow:0 10px 40px rgba(0,212,255,0.2) !important; }
+.hub-card-store { border-color:rgba(80,200,120,0.25) !important; }
+.hub-card-store:hover { border-color:rgba(80,200,120,0.6) !important; box-shadow:0 10px 40px rgba(80,200,120,0.2) !important; }
+
+/* ===== GEMS CURRENCY ===== */
+.global-gems-bar { background:rgba(100,200,255,0.1); border:1px solid rgba(100,200,255,0.25); border-radius:20px; padding:4px 12px; font-size:13px; color:#7dd3fc; font-weight:800; }
+.hub-gem-sep { color:#333; }
+.hub-coins { font-size:22px; font-weight:900; color:#ffd700; margin-bottom:4px; letter-spacing:1px; }
+.clicker-gems-row { font-size:13px; color:#7dd3fc; font-weight:700; margin-bottom:4px; }
+.gem-price { color:#7dd3fc !important; font-size:13px; font-weight:800; }
+.market-price-coin { font-size:10px; color:#555; margin-top:1px; }
+.market-gem-card { border-color:rgba(100,200,255,0.35) !important; background:rgba(100,200,255,0.04) !important; }
+.market-gem-card:hover { border-color:rgba(100,200,255,0.6) !important; }
+.icon-store-gems-info { font-size:12px; color:#7dd3fc; background:rgba(100,200,255,0.08); border:1px solid rgba(100,200,255,0.2); border-radius:8px; padding:8px 14px; margin-top:8px; }
+
+/* ===== STORE SCREEN ===== */
+.store-tabs { display:flex; gap:8px; padding:12px 16px 0; background:rgba(255,255,255,0.02); border-bottom:1px solid rgba(255,255,255,0.06); flex-shrink:0; }
+.store-tab { padding:10px 22px; font-size:13px; font-weight:800; letter-spacing:1px; border:none; border-radius:8px 8px 0 0; cursor:pointer; background:rgba(255,255,255,0.05); color:#666; transition:all 0.18s; }
+.store-tab:hover { background:rgba(255,255,255,0.1); color:#aaa; }
+.store-tab-active { background:rgba(255,140,0,0.15) !important; color:#ff8c00 !important; border-bottom:2px solid #ff8c00; }
+.store-tab-content { flex:1; overflow-y:auto; padding:16px; min-height:0; }
+
+/* ===== 3D HUB CARD EFFECTS ===== */
+.hub-grid { perspective:1000px; }
+.hub-card {
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  transform-style: preserve-3d;
+}
+.hub-card:hover {
+  transform: translateY(-6px) rotateX(-4deg) scale(1.03);
+  box-shadow: 0 16px 48px rgba(255,100,0,0.22), 0 4px 12px rgba(0,0,0,0.5);
+}
+.hub-ball {
+  font-size: 60px; display:block; margin-bottom:8px;
+  animation: hubBallSpin 8s linear infinite;
+  filter: drop-shadow(0 0 30px rgba(255,140,0,0.8));
+  transform-style: preserve-3d;
+}
+@keyframes hubBallSpin {
+  0%   { transform: rotateY(0deg) translateY(0px); }
+  25%  { transform: rotateY(90deg) translateY(-8px); }
+  50%  { transform: rotateY(180deg) translateY(0px); }
+  75%  { transform: rotateY(270deg) translateY(-8px); }
+  100% { transform: rotateY(360deg) translateY(0px); }
+}
+
+/* ===== PCARD 3D LIFT ===== */
+.pcard { transition: transform 0.22s ease, box-shadow 0.22s ease; }
+.pcard:hover { transform: translateY(-5px) scale(1.025); box-shadow: 0 14px 40px var(--card-glow, rgba(255,100,0,0.4)); }
 
 /* ===== PAUSE OVERLAY ===== */
 #pauseOverlay.visible { display:flex !important; }

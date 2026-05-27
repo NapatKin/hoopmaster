@@ -503,20 +503,22 @@ function renderTournamentScreen() {
 
 // ===== ICON STORE (Special Cards) =====
 const ICON_PLAYERS = [
-  { id:'ico_mj',     base:'mj',     name:'ICON Jordan',   ovr:99, boostedStats:{sht:99,spd:99,drb:99,def:99,phy:95}, extraTrait:'bank_king',   cost:200000 },
-  { id:'ico_lebron', base:'lebron', name:'ICON LeBron',   ovr:99, boostedStats:{sht:96,spd:95,drb:99,def:96,phy:99}, extraTrait:'wind_proof',  cost:180000 },
-  { id:'ico_kobe',   base:'kobe',   name:'ICON Kobe',     ovr:98, boostedStats:{sht:99,spd:97,drb:99,def:96,phy:92}, extraTrait:'magic_touch', cost:175000 },
-  { id:'ico_curry',  base:'curry',  name:'ICON Curry',    ovr:97, boostedStats:{sht:99,spd:96,drb:97,def:86,phy:86}, extraTrait:'bank_king',   cost:160000 },
-  { id:'ico_giannis',base:'giannis',name:'ICON Giannis',  ovr:98, boostedStats:{sht:88,spd:99,drb:98,def:99,phy:99}, extraTrait:'glass_cleaner',cost:165000 },
+  { id:'ico_mj',     base:'mj',     name:'ICON Jordan',   ovr:99, boostedStats:{sht:99,spd:99,drb:99,def:99,phy:95}, extraTrait:'bank_king',    gemCost:20 },
+  { id:'ico_lebron', base:'lebron', name:'ICON LeBron',   ovr:99, boostedStats:{sht:96,spd:95,drb:99,def:96,phy:99}, extraTrait:'wind_proof',   gemCost:15 },
+  { id:'ico_kobe',   base:'kobe',   name:'ICON Kobe',     ovr:98, boostedStats:{sht:99,spd:97,drb:99,def:96,phy:92}, extraTrait:'magic_touch',  gemCost:15 },
+  { id:'ico_curry',  base:'curry',  name:'ICON Curry',    ovr:97, boostedStats:{sht:99,spd:96,drb:97,def:86,phy:86}, extraTrait:'bank_king',    gemCost:12 },
+  { id:'ico_giannis',base:'giannis',name:'ICON Giannis',  ovr:98, boostedStats:{sht:88,spd:99,drb:98,def:99,phy:99}, extraTrait:'glass_cleaner',gemCost:12 },
 ];
 
 function renderIconStore() {
-  const container = document.getElementById('iconStoreContent');
+  const container = document.getElementById('iconStoreContent') || document.getElementById('storeIconContent');
   if (!container) return;
 
+  const playerGems = window.getGems ? window.getGems() : 0;
   let html = `
   <div class="icon-store-header">
     <p class="icon-store-desc">Exclusive ICON cards — maximum boosted stats + bonus trait. The pinnacle of player cards!</p>
+    <div class="icon-store-gems-info">💎 You have <strong>${playerGems} gems</strong> · Earn gems by prestiging in Ball Tycoon</div>
   </div>
   <div class="icon-cards-grid">`;
 
@@ -524,7 +526,7 @@ function renderIconStore() {
     const base = PLAYER_DB.find(p => p.id === ic.base);
     if (!base) return;
     const owned = PS.collection.includes(ic.id);
-    const canAfford = window.getCoins() >= ic.cost;
+    const canAfford = playerGems >= ic.gemCost;
     const et = TRAITS[ic.extraTrait];
     const initials = base.name.split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase();
 
@@ -550,12 +552,12 @@ function renderIconStore() {
           ${[...base.traits.slice(0,2), ic.extraTrait].map(t => TRAITS[t] ? `<span class="ptrait" style="border-color:rgba(255,215,0,0.4);color:#ffd700">${TRAITS[t].icon}</span>` : '').join('')}
         </div>
       </div>
-      <div class="ico-price">🪙 ${fmtCoins(ic.cost)}</div>
+      <div class="ico-price gem-price">💎 ${ic.gemCost} Gems</div>
       ${et ? `<div class="ico-bonus-trait">★ Bonus: ${et.icon} ${et.label}</div>` : ''}
       <button class="btn ${owned ? 'btn-secondary' : canAfford ? 'btn-primary' : 'btn-secondary'} ico-buy-btn"
         onclick="${owned ? '' : `buyIconCard('${ic.id}')`}"
         ${owned ? 'disabled' : ''} style="min-width:0;width:155px;padding:8px;font-size:11px">
-        ${owned ? '✓ IN COLLECTION' : canAfford ? 'BUY ICON' : '🔒 NEED MORE 🪙'}
+        ${owned ? '✓ IN COLLECTION' : canAfford ? `💎 BUY (${ic.gemCost})` : `Need ${ic.gemCost} 💎`}
       </button>
     </div>`;
   });
@@ -567,7 +569,10 @@ function renderIconStore() {
 window.buyIconCard = function(iconId) {
   const ic = ICON_PLAYERS.find(c => c.id === iconId);
   if (!ic) return;
-  if (!window.spendCoins(ic.cost)) { alert('Not enough coins!'); return; }
+  if (!window.spendGems || !window.spendGems(ic.gemCost)) {
+    alert(`Need ${ic.gemCost} 💎 gems! Prestige in Ball Tycoon to earn gems.`);
+    return;
+  }
   const base = PLAYER_DB.find(p => p.id === ic.base);
   if (!base) return;
   if (!PLAYER_DB.find(p => p.id === ic.id)) {
@@ -584,6 +589,135 @@ window.buyIconCard = function(iconId) {
   alert(`🌟 ${ic.name} added to your collection!`);
 };
 
+// ===== STORE SCREEN =====
+let _storeTab = 'packs';
+window.switchStoreTab = function(tab) {
+  _storeTab = tab;
+  document.querySelectorAll('.store-tab').forEach(t => t.classList.remove('store-tab-active'));
+  const btn = document.getElementById('storeTab_' + tab);
+  if (btn) btn.classList.add('store-tab-active');
+  renderStoreTab(tab);
+};
+
+function renderStoreTab(tab) {
+  const container = document.getElementById('storeTabContent');
+  if (!container) return;
+  updateCoinsDisplay();
+
+  if (tab === 'packs') {
+    let html = `<div class="pack-store-wrap"><div class="pack-store-grid">`;
+    PACKS.forEach(pack => {
+      const canAfford = window.getCoins() >= pack.cost;
+      const oddsList = Object.entries(pack.odds).filter(([,v])=>v>0)
+        .map(([k,v])=>`<span style="color:${RARITY[k].textColor}">${RARITY[k].label} ${Math.round(v*100)}%</span>`).join(' · ');
+      html += `
+      <div class="pack-card-store ${canAfford ? '' : 'pack-locked'}">
+        <div class="pack-icon">${pack.icon}</div>
+        <h3 class="pack-name" style="color:${pack.color}">${pack.name}</h3>
+        <div class="pack-desc">${pack.desc}</div>
+        <div class="pack-odds">${oddsList}</div>
+        <div class="pack-cost">🪙 ${fmtCoins(pack.cost)}</div>
+        <button class="btn ${canAfford ? 'btn-primary' : 'btn-secondary'} pack-buy-btn"
+          onclick="buyPackFromStore('${pack.id}')">${canAfford ? 'OPEN PACK' : 'NOT ENOUGH 🪙'}</button>
+      </div>`;
+    });
+    html += `</div></div>`;
+    container.innerHTML = html;
+
+  } else if (tab === 'market') {
+    if (Date.now() - PS.marketRefresh > 600000) refreshMarket();
+    let html = `<div style="display:flex;justify-content:flex-end;padding:8px 16px">
+      <button class="sqbtn" onclick="refreshMarket();renderStoreTab('market')">🔄 Refresh</button>
+    </div><div class="market-grid" id="storeMarketContent">`;
+    PS.marketListings.forEach(listing => {
+      const p = PLAYER_DB.find(pl => pl.id === listing.id);
+      if (!p) return;
+      const owned = PS.collection.includes(p.id);
+      const gc = gemCost(p);
+      const isGemPlayer = gc > 0;
+      const canAfford = isGemPlayer ? PS.gems >= gc : PS.coins >= listing.price;
+      const priceHtml = isGemPlayer
+        ? `<div class="market-price gem-price">💎 ${gc} Gems</div><div class="market-price-coin">🪙 ${fmtCoins(listing.price)} value</div>`
+        : `<div class="market-price">🪙 ${fmtCoins(listing.price)}</div>`;
+      html += `
+      <div class="market-card ${isGemPlayer ? 'market-gem-card' : ''}">
+        ${buildCard(p, { small: true })}
+        ${priceHtml}
+        <button class="sqbtn ${owned ? 'owned-btn' : canAfford ? 'sqbtn-buy' : ''}"
+          onclick="${owned ? '' : `storeMarketBuy('${p.id}')`}"
+          ${owned || !canAfford ? 'disabled' : ''}>
+          ${owned ? '✓ OWNED' : canAfford ? (isGemPlayer ? `💎 BUY (${gc})` : 'BUY') : isGemPlayer ? `Need ${gc} 💎` : 'NEED MORE 🪙'}
+        </button>
+      </div>`;
+    });
+    html += `</div>`;
+    container.innerHTML = html;
+
+  } else if (tab === 'icons') {
+    const playerGems = window.getGems ? window.getGems() : 0;
+    let html = `
+    <div class="icon-store-header">
+      <p class="icon-store-desc">Exclusive ICON cards — maximum boosted stats + bonus trait. The pinnacle!</p>
+      <div class="icon-store-gems-info">💎 You have <strong>${playerGems} gems</strong> · Earn by prestiging in Ball Tycoon</div>
+    </div>
+    <div class="icon-cards-grid">`;
+    ICON_PLAYERS.forEach(ic => {
+      const base = PLAYER_DB.find(p => p.id === ic.base);
+      if (!base) return;
+      const owned = PS.collection.includes(ic.id);
+      const canAfford = playerGems >= ic.gemCost;
+      const et = TRAITS[ic.extraTrait];
+      const initials = base.name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+      html += `
+      <div class="icon-card-outer ${owned ? 'ico-owned' : ''}">
+        <div class="ico-badge">⭐ ICON CARD</div>
+        <div class="pcard rarity-legend" style="--card-color:#ffd700;--card-glow:rgba(255,215,0,0.9);width:155px;min-height:235px;margin:0 auto">
+          <div class="pcard-header">
+            <span class="pcard-ovr" style="color:#ffd700;font-size:26px">${ic.ovr}</span>
+            <span class="pcard-pos" style="background:#ffd700;color:#000">${base.pos}</span>
+            <span class="pcard-rarity" style="color:#ffd700">ICON</span>
+          </div>
+          <div class="pcard-avatar" style="background:${base.color}33;border-color:#ffd70088">
+            <span class="pcard-initials" style="color:#ffd700;font-size:26px">${initials}</span>
+            <span class="pcard-nat">${base.nat}</span>
+          </div>
+          <div class="pcard-name" style="color:#ffd700;font-size:13px">${ic.name}</div>
+          <div class="pcard-team">${base.team}</div>
+          <div class="pcard-stats">${['sht','spd','drb','def','phy'].map(s=>`<div class="pstat"><span class="pstat-val" style="color:#ffd700">${ic.boostedStats[s]}</span><span class="pstat-lbl">${s.toUpperCase()}</span></div>`).join('')}</div>
+          <div class="pcard-traits">${[...base.traits.slice(0,2),ic.extraTrait].map(t=>TRAITS[t]?`<span class="ptrait" style="border-color:rgba(255,215,0,0.4);color:#ffd700">${TRAITS[t].icon}</span>`:'').join('')}</div>
+        </div>
+        <div class="ico-price gem-price">💎 ${ic.gemCost} Gems</div>
+        ${et ? `<div class="ico-bonus-trait">★ Bonus: ${et.icon} ${et.label}</div>` : ''}
+        <button class="btn ${owned ? 'btn-secondary' : canAfford ? 'btn-primary' : 'btn-secondary'} ico-buy-btn"
+          onclick="${owned ? '' : `buyIconCard('${ic.id}')`}"
+          ${owned ? 'disabled' : ''} style="min-width:0;width:155px;padding:8px;font-size:11px">
+          ${owned ? '✓ IN COLLECTION' : canAfford ? `💎 BUY (${ic.gemCost})` : `Need ${ic.gemCost} 💎`}
+        </button>
+      </div>`;
+    });
+    html += `</div>`;
+    container.innerHTML = html;
+  }
+}
+
+window.buyPackFromStore = function(packId) {
+  const results = openPack(packId);
+  if (results === null) { alert('Not enough coins!'); return; }
+  renderStoreTab('packs');
+  showPackOpening(results);
+};
+
+window.storeMarketBuy = function(playerId) {
+  if (buyFromMarket(playerId)) {
+    renderStoreTab('market');
+    updateCoinsDisplay();
+  } else {
+    const p = PLAYER_DB.find(pl => pl.id === playerId);
+    const gc = p ? gemCost(p) : 0;
+    alert(gc > 0 ? `Need ${gc} 💎 gems! Prestige in Ball Tycoon to earn gems.` : 'Not enough coins!');
+  }
+};
+
 // ===== SCREEN HOOK =====
 const _origShowScreenExtras = window.showScreen;
 window.showScreen = function(id) {
@@ -597,6 +731,17 @@ window.showScreen = function(id) {
   if (id === 'managerScreen')    { if (window.renderManagerScreen) renderManagerScreen(); updateCoinsDisplay(); }
   if (id === 'careerScreen')     { if (window.renderCareerScreen)  renderCareerScreen();  updateCoinsDisplay(); }
   if (id === 'authScreen')       { if (window.renderAuthScreen)    renderAuthScreen(); }
+  if (id === 'storeScreen') {
+    updateCoinsDisplay();
+    // Reset to packs tab on open
+    _storeTab = 'packs';
+    setTimeout(() => {
+      document.querySelectorAll('.store-tab').forEach(t => t.classList.remove('store-tab-active'));
+      const btn = document.getElementById('storeTab_packs');
+      if (btn) btn.classList.add('store-tab-active');
+      renderStoreTab('packs');
+    }, 0);
+  }
   if (id === 'squadScreen') {
     if (window.trackDailyProgress) {
       const filled = Object.values(PS.squad).filter(Boolean).length;

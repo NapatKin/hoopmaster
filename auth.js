@@ -7,7 +7,7 @@ const AUTH = {
   profiles: [],         // [{ name, created, lastPlayed }]
 };
 
-const PROFILE_KEYS = ['ps', 'clicker', 'trainState', 'dailyChallenges', 'mgrState', 'careerState'];
+const PROFILE_KEYS = ['playerState', 'clicker', 'trainState', 'dailyChallenges', 'mgrState', 'careerState'];
 
 function authLoad() {
   AUTH.profiles = JSON.parse(localStorage.getItem('hm_profiles') || '[]');

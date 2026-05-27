@@ -83,19 +83,19 @@ const PLAYER_DB = [
 
 // ===== PACK DEFINITIONS =====
 const PACKS = [
-  { id:'bronze', name:'Bronze Pack',  icon:'🟫', cost:500,   cards:5, color:'#8B5E3C',
+  { id:'bronze', name:'Bronze Pack',  icon:'🟫', cost:3000,   cards:5, color:'#8B5E3C',
     odds:{ bronze:0.70, silver:0.25, gold:0.05, elite:0,    legend:0 },
     desc:'Mostly bronze players with a chance of silver' },
-  { id:'silver', name:'Silver Pack',  icon:'🥈', cost:2000,  cards:5, color:'#8892B0',
+  { id:'silver', name:'Silver Pack',  icon:'🥈', cost:12000,  cards:5, color:'#8892B0',
     odds:{ bronze:0.15, silver:0.55, gold:0.25, elite:0.05, legend:0 },
     desc:'Solid silver cards, good gold chance' },
-  { id:'gold',   name:'Gold Pack',    icon:'🥇', cost:8000,  cards:5, color:'#FFD700',
+  { id:'gold',   name:'Gold Pack',    icon:'🥇', cost:50000,  cards:5, color:'#FFD700',
     odds:{ bronze:0,    silver:0.15, gold:0.55, elite:0.25, legend:0.05 },
     desc:'Mostly gold with elite & legend chance' },
-  { id:'elite',  name:'Elite Pack',   icon:'💎', cost:25000, cards:5, color:'#7B2FBE',
+  { id:'elite',  name:'Elite Pack',   icon:'💎', cost:200000, cards:5, color:'#7B2FBE',
     odds:{ bronze:0,    silver:0,    gold:0.10, elite:0.70, legend:0.20 },
     desc:'Guaranteed elite players, high legend chance' },
-  { id:'legend', name:'Legend Pack',  icon:'👑', cost:100000,cards:5, color:'#FFD700',
+  { id:'legend', name:'Legend Pack',  icon:'👑', cost:800000, cards:5, color:'#FFD700',
     odds:{ bronze:0,    silver:0,    gold:0,    elite:0.30, legend:0.70 },
     desc:'Guaranteed legends — the best of the best' },
 ];
@@ -112,6 +112,7 @@ const RARITY = {
 // ===== PLAYER STATE =====
 let PS = {
   coins: 0,
+  gems: 0,
   collection: [],   // array of player IDs owned
   squad: { PG:null, SG:null, SF:null, PF:null, C:null },
   activePlayer: null,
@@ -123,6 +124,7 @@ function loadPS() {
   const saved = JSON.parse(localStorage.getItem('playerState') || 'null');
   if (saved) {
     PS.coins        = saved.coins || 0;
+    PS.gems         = saved.gems  || 0;
     PS.collection   = saved.collection || [];
     PS.squad        = saved.squad || { PG:null, SG:null, SF:null, PF:null, C:null };
     PS.activePlayer = saved.activePlayer || null;
@@ -148,19 +150,23 @@ function loadPS() {
 
 function savePS() {
   localStorage.setItem('playerState', JSON.stringify({
-    coins: PS.coins, collection: PS.collection,
+    coins: PS.coins, gems: PS.gems, collection: PS.collection,
     squad: PS.squad, activePlayer: PS.activePlayer,
     marketListings: PS.marketListings, marketRefresh: PS.marketRefresh,
   }));
 }
 
-// ===== COINS API (shared) =====
-window.getCoins  = () => PS.coins;
-window.addCoins  = (n) => { PS.coins += n; savePS(); updateCoinsDisplay(); };
+// ===== COINS + GEMS API (shared) =====
+window.getCoins   = () => PS.coins;
+window.addCoins   = (n) => { PS.coins += n; savePS(); updateCoinsDisplay(); };
 window.spendCoins = (n) => { if (PS.coins < n) return false; PS.coins -= n; savePS(); updateCoinsDisplay(); return true; };
+window.getGems    = () => PS.gems;
+window.addGems    = (n) => { PS.gems += Math.floor(n); savePS(); updateCoinsDisplay(); };
+window.spendGems  = (n) => { if (PS.gems < n) return false; PS.gems -= n; savePS(); updateCoinsDisplay(); return true; };
 
 function updateCoinsDisplay() {
   document.querySelectorAll('.global-coins').forEach(el => el.textContent = fmtCoins(PS.coins));
+  document.querySelectorAll('.global-gems').forEach(el => el.textContent = PS.gems);
 }
 
 function fmtCoins(n) {
@@ -213,15 +219,30 @@ function refreshMarket() {
 }
 
 function marketPrice(p) {
-  const base = { bronze:400, silver:1800, gold:7000, elite:22000, legend:90000 };
-  const variance = 0.7 + Math.random() * 0.6;
-  return Math.floor((base[p.rarity] || 500) * variance);
+  const base = { bronze: 5000, silver: 25000, gold: 120000, elite: 600000, legend: 2000000 };
+  const variance = 0.8 + Math.random() * 0.4;
+  return Math.floor((base[p.rarity] || 5000) * variance);
+}
+
+// Gem cost for 90+ OVR players (0 = no gems needed)
+function gemCost(p) {
+  if (p.ovr >= 98) return 12;
+  if (p.ovr >= 95) return 8;
+  if (p.ovr >= 92) return 5;
+  if (p.ovr >= 90) return 3;
+  return 0;
 }
 
 function buyFromMarket(playerId) {
   const listing = PS.marketListings.find(l => l.id === playerId);
   if (!listing) return false;
-  if (!window.spendCoins(listing.price)) return false;
+  const p = PLAYER_DB.find(pl => pl.id === playerId);
+  const gc = p ? gemCost(p) : 0;
+  if (gc > 0) {
+    if (!window.spendGems(gc)) return false;
+  } else {
+    if (!window.spendCoins(listing.price)) return false;
+  }
   if (window.trackDailyProgress) window.trackDailyProgress('marketBuys', 1);
   if (!PS.collection.includes(playerId)) PS.collection.push(playerId);
   PS.marketListings = PS.marketListings.filter(l => l.id !== playerId);
@@ -421,20 +442,26 @@ function renderMarket() {
     const p = PLAYER_DB.find(pl => pl.id === listing.id);
     if (!p) return;
     const owned = PS.collection.includes(p.id);
-    const canAfford = PS.coins >= listing.price;
+    const gc = gemCost(p);
+    const isGemPlayer = gc > 0;
+    const canAfford = isGemPlayer ? PS.gems >= gc : PS.coins >= listing.price;
+    const priceHtml = isGemPlayer
+      ? `<div class="market-price gem-price">💎 ${gc} Gems</div><div class="market-price-coin">🪙 ${fmtCoins(listing.price)} value</div>`
+      : `<div class="market-price">🪙 ${fmtCoins(listing.price)}</div>`;
     html += `
-    <div class="market-card">
+    <div class="market-card ${isGemPlayer ? 'market-gem-card' : ''}">
       ${buildCard(p, { small: true })}
-      <div class="market-price">🪙 ${fmtCoins(listing.price)}</div>
-      <button class="sqbtn ${owned?'owned-btn':canAfford?'sqbtn-buy':''}"
-        onclick="${owned?'':canAfford?`buyMarketPlayer('${p.id}')`:''}"
-        ${owned||!canAfford?'disabled':''}>
-        ${owned?'✓ OWNED':canAfford?'BUY':'NEED MORE 🪙'}
+      ${priceHtml}
+      <button class="sqbtn ${owned ? 'owned-btn' : canAfford ? 'sqbtn-buy' : ''}"
+        onclick="${owned ? '' : `buyMarketPlayer('${p.id}')`}"
+        ${owned || !canAfford ? 'disabled' : ''}>
+        ${owned ? '✓ OWNED' : canAfford ? (isGemPlayer ? `💎 BUY (${gc})` : 'BUY') : isGemPlayer ? `Need ${gc} 💎` : 'NEED MORE 🪙'}
       </button>
     </div>`;
   });
   html += `</div>`;
-  document.getElementById('marketContent').innerHTML = html;
+  const el = document.getElementById('marketContent') || document.getElementById('storeMarketContent');
+  if (el) el.innerHTML = html;
 }
 
 function buyMarketPlayer(playerId) {

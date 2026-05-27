@@ -176,9 +176,9 @@ function updateClickerUI() {
   const canPrestige = CLICKER.totalCoins >= threshold;
   const pBtn = document.getElementById('prestigeBtn');
   if (pBtn) {
-    pBtn.style.display = CLICKER.totalCoins >= 10000 ? '' : 'none';
+    pBtn.style.display = '';
     pBtn.textContent = canPrestige
-      ? `⭐ PRESTIGE #${CLICKER.prestige + 1} — READY!`
+      ? `⭐ PRESTIGE #${CLICKER.prestige + 1} — READY! (+${CLICKER.prestige + 1} 💎)`
       : `⭐ PRESTIGE #${CLICKER.prestige + 1}: ${pPct}% (${formatCoins(CLICKER.totalCoins)}/${formatCoins(threshold)})`;
     pBtn.disabled = !canPrestige;
     pBtn.style.opacity = canPrestige ? '1' : '0.55';
@@ -374,6 +374,7 @@ function prestigeReset() {
     `• Clicker upgrades reset\n` +
     `• Permanent ${mult}x ALL clicker earnings!\n` +
     `• +1 Prestige Point for the Perk Shop\n` +
+    `• +💎 ${nextLevel} GEMS (buy elite players!)\n` +
     `• +🪙${(headStartAmt).toLocaleString()} coins to start\n` +
     `• 60-second PRESTIGE RUSH (5x bonus!)\n` +
     `• Next prestige at ${formatCoins(prestigeThreshold(nextLevel))}\n\n` +
@@ -384,12 +385,14 @@ function prestigeReset() {
   CLICKER.prestigePoints = (CLICKER.prestigePoints || 0) + 1;
   CLICKER.totalCoins = 0;
   Object.keys(upgradeState).forEach(k => { upgradeState[k].level = 0; });
-  // Only remove coins earned by the clicker in this cycle — don't drain global coins from other modes
-  // Just reset the clicker display; global coins remain
 
   // Head Start — give coins
   if (window.addCoins) window.addCoins(headStartAmt);
   CLICKER.totalCoins += headStartAmt;
+
+  // Give gems: prestige N gives N gems
+  const gemsEarned = nextLevel;
+  if (window.addGems) window.addGems(gemsEarned);
 
   // Ball auto-upgrades based on prestige (cosmetic)
   if (nextLevel >= 3 && !CLICKER.perks.skinFire)    CLICKER.ballSkin = 'fire';
@@ -547,6 +550,7 @@ function showGoldenBall() {
 }
 
 // ===== AUTO-EARN LOOP =====
+let _autoSaveTick = 0;
 function startClickerLoop() {
   clearInterval(CLICKER.interval);
   CLICKER.interval = setInterval(() => {
@@ -560,6 +564,9 @@ function startClickerLoop() {
       updateClickerUI();
       if (Math.floor(window.getCoins ? window.getCoins() : 0) % 100 === 0) renderUpgrades();
     }
+    // Save clicker totalCoins every ~5 seconds so prestige progress is persisted
+    _autoSaveTick++;
+    if (_autoSaveTick >= 50) { _autoSaveTick = 0; saveClicker(); }
   }, 100);
 }
 
