@@ -29,9 +29,9 @@ const BALL_SKINS = {
   default: '🏀', fire: '🔥', diamond: '💎', goat: '🐐', crown: '👑'
 };
 
-// Prestige threshold: 200K, 600K, 1.8M, 5.4M...
+// Prestige threshold: 10K, 30K, 90K, 270K...
 function prestigeThreshold(level) {
-  return Math.floor(200000 * Math.pow(3, level));
+  return Math.floor(10000 * Math.pow(3, level));
 }
 
 const UPGRADES = [
@@ -140,9 +140,10 @@ function formatCoins(n) {
 
 // ===== UI =====
 function updateClickerUI() {
-  const coins = window.getCoins ? window.getCoins() : 0;
   const el = document.getElementById('clickerCoins');
-  if (el) el.textContent = formatCoins(Math.floor(coins));
+  if (el) el.textContent = formatCoins(Math.floor(CLICKER.totalCoins));
+  const walletEl = document.getElementById('clickerWallet');
+  if (walletEl) walletEl.textContent = formatCoins(Math.floor(window.getCoins ? window.getCoins() : 0)) + ' 🪙 wallet';
 
   const cpsEl = document.getElementById('clickerCPS');
   if (cpsEl) cpsEl.textContent = CLICKER.cps > 0 ? `${formatCoins(CLICKER.cps)} coins/sec` : '0 coins/sec';

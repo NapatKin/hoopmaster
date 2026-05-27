@@ -81,12 +81,14 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI
   width: 340px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center;
   padding: 20px; border-right: 1px solid rgba(255,140,0,0.15);
   background: linear-gradient(180deg, #08060f 0%, #0d0a00 100%);
+  overflow-y: auto;
 }
 .clicker-back { margin-bottom: 10px; min-width: 0; padding: 8px 20px; font-size: 11px; align-self: flex-start; }
 .clicker-title { font-size: 26px; font-weight: 900; color: #ff8c00; letter-spacing: 4px; margin-bottom: 14px; text-shadow: 0 0 20px rgba(255,140,0,0.5); }
 .clicker-coins { display: flex; flex-direction: column; align-items: center; margin-bottom: 4px; }
 .clicker-coins span:first-child { font-size: 54px; font-weight: 900; color: #ffd700; text-shadow: 0 0 30px rgba(255,215,0,0.5); line-height: 1; }
 .coin-label { font-size: 11px; letter-spacing: 3px; color: #888; margin-top: 2px; }
+.clicker-wallet { font-size: 12px; color: #aaa; margin-bottom: 2px; }
 .clicker-cps { font-size: 13px; color: #aaa; margin-bottom: 16px; }
 .clicker-ball-wrap { position: relative; margin: 10px 0; }
 .clicker-ball {

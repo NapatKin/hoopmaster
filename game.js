@@ -890,7 +890,8 @@ function showScreen(id) {
 }
 
 function updateSplashStars() {
-  document.getElementById('totalStars').textContent = '⭐ ' + (parseInt(localStorage.getItem('totalStars') || '0'));
+  const el = document.getElementById('totalStars');
+  if (el) el.textContent = '⭐ ' + (parseInt(localStorage.getItem('totalStars') || '0'));
 }
 
 function populateLeaderboard() {
