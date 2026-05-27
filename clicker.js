@@ -576,6 +576,8 @@ const _origShowScreen = window.showScreen;
 window.showScreen = function(id) {
   _origShowScreen(id);
   if (id === 'clickerScreen') {
+    const modal = document.getElementById('perkShopModal');
+    if (modal) modal.style.display = 'none';
     loadClicker();
     renderUpgrades();
     updateClickerUI();
