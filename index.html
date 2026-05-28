@@ -221,9 +221,11 @@
         <div class="clicker-combo" id="clickerCombo" style="display:none"></div>
         <div class="clicker-actions">
           <button class="btn-daily-bonus" id="dailyBonusBtn" onclick="claimDailyClickerBonus()">🎁 Claim Daily Bonus</button>
+          <button class="btn-spin" id="spinBtn" onclick="doLuckySpin()">🎰 Lucky Spin (🪙5K)</button>
           <button class="btn-prestige" id="prestigeBtn" onclick="prestigeReset()" style="display:none">⭐ PRESTIGE RESET</button>
           <button class="btn-perk-shop" id="perkShopBtn" onclick="togglePerkShop()" style="display:none">🎁 Perk Shop</button>
         </div>
+        <div id="spinResult" class="spin-result" style="display:none"></div>
         <div id="milestoneToast" class="milestone-toast" style="display:none"></div>
         <div id="prestigeRushBanner" class="prestige-rush-banner" style="display:none"></div>
         <!-- Perk Shop Modal -->

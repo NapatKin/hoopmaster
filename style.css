@@ -793,6 +793,24 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI
 .mgr-transfer-stats { font-size:10px; color:#666; margin-bottom:6px; line-height:1.6; }
 .mgr-transfer-price { font-size:14px; font-weight:900; color:#ffd700; margin-bottom:8px; }
 .mgr-transfer-owned { font-size:12px; color:#22c55e; font-weight:800; }
+.mgr-vitals-row { display:flex; gap:16px; flex-wrap:wrap; font-size:12px; color:#aaa; }
+.mgr-streak-banner { background:linear-gradient(90deg,rgba(255,80,0,0.15),rgba(255,200,0,0.15)); border:1px solid rgba(255,140,0,0.4); border-radius:8px; padding:8px 14px; font-size:13px; font-weight:800; color:#ff8c00; text-align:center; }
+.mgr-roster-wrap { max-width:700px; margin:0 auto; }
+.mgr-roster-grid { display:flex; flex-direction:column; gap:8px; }
+.mgr-roster-slot { display:flex; align-items:center; gap:10px; }
+.mgr-roster-pos-label { width:80px; font-size:11px; font-weight:800; color:#666; letter-spacing:1px; flex-shrink:0; }
+.mgr-roster-pos-label small { display:block; font-weight:400; font-size:9px; }
+.mgr-roster-player { flex:1; display:flex; align-items:center; gap:10px; background:rgba(255,255,255,0.04); border:1px solid; border-radius:8px; padding:8px 12px; }
+.mgr-roster-empty { flex:1; border:1px dashed rgba(255,255,255,0.15); border-radius:8px; padding:8px 12px; color:#555; font-size:11px; cursor:pointer; text-align:center; }
+.mgr-roster-empty:hover { border-color:rgba(255,140,0,0.4); color:#ff8c00; }
+.mgr-roster-ovr { font-size:22px; font-weight:900; min-width:36px; text-align:center; }
+.mgr-roster-info { flex:1; }
+.mgr-roster-name { font-size:13px; font-weight:800; color:#fff; }
+.mgr-roster-stats { font-size:10px; color:#666; margin-top:2px; }
+.mgr-bench-grid { display:flex; flex-wrap:wrap; gap:8px; }
+.mgr-scout { max-width:600px; margin:0 auto; text-align:center; }
+.mgr-scout-result { margin:16px 0; }
+.mgr-scout-found { font-size:13px; font-weight:800; color:#ffd700; margin-bottom:10px; }
 .mgr-btn-buy { background:rgba(34,197,94,0.2); border:1px solid rgba(34,197,94,0.4); color:#22c55e; padding:6px 18px; border-radius:6px; cursor:pointer; font-size:12px; font-weight:800; transition:all 0.18s; }
 .mgr-btn-buy:hover { background:rgba(34,197,94,0.35); }
 .mgr-btn-disabled { opacity:0.4; cursor:not-allowed; }
@@ -888,6 +906,23 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI
 .career-award-coins { color:#ffd700; font-size:15px; font-weight:900; margin-bottom:12px; }
 .career-no-award { color:#666; font-size:13px; padding:20px; }
 
+/* ===== LUCKY SPIN ===== */
+.btn-spin { background:rgba(255,50,200,0.12); border:1px solid rgba(255,50,200,0.4); color:#ff32c8; padding:9px 14px; font-size:12px; font-weight:800; letter-spacing:1px; cursor:pointer; border-radius:6px; transition:all 0.18s; }
+.btn-spin:hover { background:rgba(255,50,200,0.25); }
+.spin-result { text-align:center; padding:10px; font-size:16px; font-weight:900; border-radius:8px; margin-top:8px; }
+.spin-spinning { color:#aaa; animation:pulse 0.4s ease-in-out infinite; }
+.spin-win  { color:#ffd700; background:rgba(255,215,0,0.1); border:1px solid rgba(255,215,0,0.3); }
+.spin-nothing { color:#666; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+/* ===== SQUAD COLLECTION BAR ===== */
+.squad-collection-bar { display:flex; align-items:center; gap:10px; padding:8px 16px; color:#888; font-size:12px; flex-wrap:wrap; }
+.squad-coll-bar-wrap { flex:1; min-width:80px; max-width:200px; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; }
+.squad-coll-bar-fill { height:100%; background:linear-gradient(90deg,#ff8c00,#ffd700); border-radius:3px; transition:width 0.5s; }
+
+/* ===== CAREER SPONSOR ===== */
+.career-sponsor-badge { background:rgba(34,197,94,0.1); border:1px solid rgba(34,197,94,0.3); color:#22c55e; padding:6px 12px; border-radius:6px; font-size:11px; font-weight:800; }
+
 /* ===== CAREER OFF-SEASON ===== */
 .career-offseason { max-width:600px; margin:0 auto; }
 .career-offseason-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; margin:16px 0; }
@@ -902,6 +937,10 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI
 @keyframes toastIn { from { opacity:0; transform:translateX(-50%) translateY(20px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
 
 /* ===== AUTH / PROFILES ===== */
+.auth-pw-modal { position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:200; display:flex; align-items:center; justify-content:center; }
+.auth-pw-inner { background:linear-gradient(135deg,#1a1a2e,#16213e); border:1px solid rgba(255,140,0,0.4); border-radius:16px; padding:28px; width:min(340px,90vw); text-align:center; }
+.auth-pw-title { font-size:20px; font-weight:900; color:#ff8c00; margin-bottom:8px; }
+.auth-pw-name  { font-size:14px; color:#888; margin-bottom:4px; }
 .auth-screen-wrap { width:100%; height:100%; display:flex; align-items:center; justify-content:center; position:relative; z-index:2; }
 .auth-wrap { background:linear-gradient(135deg,rgba(10,5,20,0.95),rgba(26,10,0,0.95)); border:1px solid rgba(255,140,0,0.2); border-radius:20px; padding:32px; width:min(480px,95vw); max-height:90vh; overflow-y:auto; }
 .auth-logo { font-size:52px; text-align:center; }

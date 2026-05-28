@@ -83,28 +83,37 @@ const PLAYER_DB = [
 
 // ===== PACK DEFINITIONS =====
 const PACKS = [
-  { id:'starter', name:'Starter Pack', icon:'🎒', cost:500,    cards:3, color:'#4a7a4a',
+  { id:'starter',   name:'Starter Pack',   icon:'🎒', cost:500,    cards:3, color:'#4a7a4a',
     odds:{ bronze:0.90, silver:0.10, gold:0,    elite:0,    legend:0 },
     desc:'3 cards — great for beginners, cheap entry pack' },
-  { id:'bronze', name:'Bronze Pack',  icon:'🟫', cost:3000,   cards:5, color:'#8B5E3C',
+  { id:'bronze',    name:'Bronze Pack',    icon:'🟫', cost:3000,   cards:5, color:'#8B5E3C',
     odds:{ bronze:0.70, silver:0.25, gold:0.05, elite:0,    legend:0 },
     desc:'Mostly bronze players with a chance of silver' },
-  { id:'silver', name:'Silver Pack',  icon:'🥈', cost:12000,  cards:5, color:'#8892B0',
+  { id:'silver',    name:'Silver Pack',    icon:'🥈', cost:12000,  cards:5, color:'#8892B0',
     odds:{ bronze:0.15, silver:0.55, gold:0.25, elite:0.05, legend:0 },
     desc:'Solid silver cards, good gold chance' },
-  { id:'gold',   name:'Gold Pack',    icon:'🥇', cost:50000,  cards:5, color:'#FFD700',
+  { id:'youngstars',name:'Young Stars',    icon:'🌟', cost:18000,  cards:4, color:'#00d4ff',
+    odds:{ bronze:0,    silver:0.40, gold:0.45, elite:0.15, legend:0 },
+    desc:'4 cards focused on up-and-coming talent' },
+  { id:'gold',      name:'Gold Pack',      icon:'🥇', cost:50000,  cards:5, color:'#FFD700',
     odds:{ bronze:0,    silver:0.15, gold:0.55, elite:0.25, legend:0.05 },
     desc:'Mostly gold with elite & legend chance' },
-  { id:'draft',  name:'Draft Pack',   icon:'📋', cost:25000,  cards:3, color:'#007AC1',
+  { id:'draft',     name:'Draft Night',    icon:'📋', cost:25000,  cards:3, color:'#007AC1',
     odds:{ bronze:0,    silver:0.30, gold:0.50, elite:0.20, legend:0 },
     desc:'3 hand-picked quality players — good value' },
-  { id:'elite',  name:'Elite Pack',   icon:'💎', cost:200000, cards:5, color:'#7B2FBE',
+  { id:'allstar',   name:'All-Star Pack',  icon:'⭐', cost:90000,  cards:5, color:'#ff4080',
+    odds:{ bronze:0,    silver:0,    gold:0.20, elite:0.65, legend:0.15 },
+    desc:'Guaranteed elite+ — handpicked All-Stars' },
+  { id:'elite',     name:'Elite Pack',     icon:'💎', cost:200000, cards:5, color:'#7B2FBE',
     odds:{ bronze:0,    silver:0,    gold:0.10, elite:0.70, legend:0.20 },
     desc:'Guaranteed elite players, high legend chance' },
-  { id:'legend', name:'Legend Pack',  icon:'👑', cost:800000, cards:5, color:'#FFD700',
+  { id:'throwback', name:'Throwback Pack', icon:'📼', cost:150000, cards:4, color:'#cc8800',
+    odds:{ bronze:0,    silver:0,    gold:0.05, elite:0.45, legend:0.50 },
+    desc:'4 cards — retro legends, very high legend rate' },
+  { id:'legend',    name:'Legend Pack',    icon:'👑', cost:800000, cards:5, color:'#FFD700',
     odds:{ bronze:0,    silver:0,    gold:0,    elite:0.30, legend:0.70 },
     desc:'Guaranteed legends — the best of the best' },
-  { id:'gem',    name:'Gem Pack',     icon:'💫', cost:0,      cards:3, color:'#00d4ff', gemCost:8,
+  { id:'gem',       name:'Gem Pack',       icon:'💫', cost:0,      cards:3, color:'#00d4ff', gemCost:8,
     odds:{ bronze:0,    silver:0,    gold:0.20, elite:0.60, legend:0.20 },
     desc:'3 elite+ cards — spend 8 💎 gems to open' },
 ];
@@ -314,7 +323,13 @@ function buildCard(player, opts = {}) {
 function renderSquadScreen() {
   const positions = ['PG','SG','SF','PF','C'];
   const posNames = { PG:'Point Guard', SG:'Shooting Guard', SF:'Small Forward', PF:'Power Forward', C:'Center' };
-  let html = `<div class="squad-grid">`;
+  const collPct = window.getCollectionPct ? window.getCollectionPct() : Math.round((PS.collection.length / PLAYER_DB.length) * 100);
+  let html = `<div class="squad-collection-bar">
+    📚 Collection: <strong>${PS.collection.length}/${PLAYER_DB.length}</strong>
+    <div class="squad-coll-bar-wrap"><div class="squad-coll-bar-fill" style="width:${collPct}%"></div></div>
+    <strong>${collPct}%</strong>
+  </div>
+  <div class="squad-grid">`;
   positions.forEach(pos => {
     const pid = PS.squad[pos];
     const p = pid ? PLAYER_DB.find(pl => pl.id === pid) : null;

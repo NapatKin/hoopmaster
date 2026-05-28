@@ -811,8 +811,169 @@ window.showScreen = function(id) {
   }
 };
 
+// ===== DAILY LOGIN STREAK =====
+function checkLoginStreak() {
+  const today     = new Date().toDateString();
+  const lastLogin = localStorage.getItem('hm_lastLogin') || '';
+  const streak    = parseInt(localStorage.getItem('hm_loginStreak') || '0');
+  const yesterday = new Date(Date.now() - 86400000).toDateString();
+
+  if (lastLogin === today) return; // already checked today
+
+  let newStreak = lastLogin === yesterday ? streak + 1 : 1;
+  localStorage.setItem('hm_lastLogin',    today);
+  localStorage.setItem('hm_loginStreak',  String(newStreak));
+
+  const streakRewards = [0, 500, 1000, 2000, 3000, 5000, 8000, 10000];
+  const coins  = streakRewards[Math.min(newStreak, streakRewards.length - 1)];
+  const gems   = newStreak >= 7 ? 1 : 0;
+  if (coins > 0) window.addCoins(coins);
+  if (gems  > 0 && window.addGems) window.addGems(gems);
+
+  // Show streak toast
+  setTimeout(() => {
+    const msg = `🔥 Day ${newStreak} Login Streak! +🪙${coins.toLocaleString()}${gems ? ' +1💎' : ''}`;
+    const toast = document.createElement('div');
+    toast.className = 'career-toast';
+    toast.style.bottom = '130px';
+    toast.textContent = msg;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 3500);
+  }, 2000);
+}
+
+// ===== ACHIEVEMENT SYSTEM =====
+const ACHIEVEMENTS = [
+  { id:'first_pack',   icon:'📦', name:'Pack Opener',     desc:'Open your first pack',              check: () => PS.collection.length > 1 },
+  { id:'squad_full',   icon:'👥', name:'Full Squad',       desc:'Fill all 5 squad positions',        check: () => Object.values(PS.squad).filter(Boolean).length === 5 },
+  { id:'first_tour',   icon:'🏆', name:'Tournament Entry', desc:'Enter a tournament',                check: () => !!localStorage.getItem('hm_achv_first_tour_done') },
+  { id:'prestige1',    icon:'⭐', name:'Prestiged!',       desc:'Prestige in Ball Tycoon',           check: () => (JSON.parse(localStorage.getItem('clicker')||'{}').prestige||0) >= 1 },
+  { id:'coins100k',    icon:'💰', name:'Coin Millionaire', desc:'Earn 100,000 coins total',          check: () => (JSON.parse(localStorage.getItem('clicker')||'{}').totalCoins||0) >= 100000 },
+  { id:'legend_card',  icon:'👑', name:'Legend Holder',    desc:'Own a Legend rarity player',        check: () => PS.collection.some(id => PLAYER_DB.find(p=>p.id===id)?.rarity==='legend') },
+  { id:'mgr_win10',    icon:'🏟️', name:'Manager Pro',     desc:'Win 10 manager matches',            check: () => (JSON.parse(localStorage.getItem('mgrState')||'{}').wins||0) >= 10 },
+  { id:'career_s3',    icon:'🏅', name:'Veteran',          desc:'Play 3 career seasons',             check: () => (JSON.parse(localStorage.getItem('careerState')||'{}').careerStats?.seasons||0) >= 3 },
+  { id:'gem5',         icon:'💎', name:'Gem Collector',    desc:'Collect 5 gems',                    check: () => PS.gems >= 5 },
+  { id:'daily3',       icon:'✅', name:'Daily Grinder',    desc:'Complete all 3 daily challenges',   check: () => { try{const d=JSON.parse(localStorage.getItem('dailyChallenges')||'{}'); return d.challenges?.every(c=>c.claimed);} catch{return false;} } },
+  { id:'spin_win',     icon:'🎰', name:'Lucky Spinner',    desc:'Win something from Lucky Spin',     check: () => !!localStorage.getItem('hm_achv_spin_done') },
+  { id:'collection50', icon:'📚', name:'Collector',        desc:'Own 50 players',                    check: () => PS.collection.length >= 50 },
+];
+
+function checkAchievements() {
+  const earned = JSON.parse(localStorage.getItem('hm_achievements') || '[]');
+  let newEarned = false;
+  ACHIEVEMENTS.forEach(a => {
+    if (earned.includes(a.id)) return;
+    try {
+      if (a.check()) {
+        earned.push(a.id);
+        newEarned = true;
+        if (window.addGems) window.addGems(1);
+        setTimeout(() => {
+          const toast = document.createElement('div');
+          toast.className = 'career-toast';
+          toast.style.background = 'rgba(0,0,0,0.95)';
+          toast.style.borderColor = '#ffd700';
+          toast.textContent = `🏆 Achievement: ${a.icon} ${a.name} (+1💎)`;
+          document.body.appendChild(toast);
+          setTimeout(() => toast.remove(), 4000);
+        }, 500);
+      }
+    } catch(e) {}
+  });
+  if (newEarned) localStorage.setItem('hm_achievements', JSON.stringify(earned));
+}
+
+// Check achievements periodically
+setInterval(checkAchievements, 15000);
+
+// Mark tournament entry
+const _origStartTournament = window.startTournament;
+window.startTournament = function(size) {
+  localStorage.setItem('hm_achv_first_tour_done', '1');
+  if (_origStartTournament) _origStartTournament(size);
+};
+
+// Tournament gem rewards
+const _origPlayTourneyRound = window.playTourneyRound;
+window.playTourneyRound = function() {
+  if (_origPlayTourneyRound) _origPlayTourneyRound();
+  // Award gems on championship win
+  if (TOURNEY.bracket && TOURNEY.bracket.length === 1 && TOURNEY.bracket[0]?.isPlayer) {
+    const gemReward = TOURNEY.size === 8 ? 3 : 1;
+    if (window.addGems) window.addGems(gemReward);
+    setTimeout(() => {
+      const toast = document.createElement('div');
+      toast.className = 'career-toast';
+      toast.textContent = `🏆 Tournament Champion! +${gemReward}💎`;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }, 300);
+  }
+};
+
+// ===== CAREER SPONSOR DEAL =====
+window.careerSignSponsor = function() {
+  if (!CAREER.active) return;
+  const cost = 5000 + CAREER.season * 2000;
+  if (!window.spendCoins(cost)) { alert(`Need 🪙${cost.toLocaleString()} to sign a sponsor!`); return; }
+  CAREER._sponsor = { name: ['Nike', 'Adidas', 'Gatorade', 'Under Armour', 'Puma'][Math.floor(Math.random() * 5)], income: 2000 + CAREER.season * 500 };
+  saveCareer();
+  alert(`✅ Signed with ${CAREER._sponsor.name}! Earn +🪙${CAREER._sponsor.income.toLocaleString()} per game.`);
+  if (typeof renderCareerScreen === 'function') renderCareerScreen();
+};
+
+// Patch careerSimGame to include sponsor income
+const _origCareerSimGame_sponsor = window.careerPlayGame;
+window.careerPlayGame = function() {
+  if (CAREER.gamesPlayed >= CAREER.gamesTotal) return;
+  const result = careerSimGame();
+  if (result && CAREER._sponsor) {
+    window.addCoins(CAREER._sponsor.income);
+  }
+  updateCoinsDisplay();
+  renderCareerScreen();
+};
+
+// ===== 3v3 FAST BREAK BONUS =====
+window._g3ScoreStreak = 0;
+const _origLandShot = window.landShot;
+// We patch the score event in landShot via G3
+(function patchFastBreak() {
+  const origUpdate = window.update3;
+  if (!origUpdate) return;
+  // The fast break logic: 3 consecutive user team scores = 2x coin bonus for that score
+  // We can't easily patch update3, but we can watch G3.score changes via an interval
+  let lastUserScore = 0;
+  setInterval(() => {
+    if (!window.G3 || window.G3.phase !== 'playing') { window._g3ScoreStreak = 0; lastUserScore = 0; return; }
+    if (window.G3.score[0] > lastUserScore) {
+      window._g3ScoreStreak = (window._g3ScoreStreak || 0) + 1;
+      lastUserScore = window.G3.score[0];
+      if (window._g3ScoreStreak >= 3) {
+        const bonus = 50;
+        window.addCoins(bonus);
+        window._g3ScoreStreak = 0;
+        const toast = document.createElement('div');
+        toast.className = 'career-toast';
+        toast.style.bottom = '50%';
+        toast.textContent = `🔥 FAST BREAK! +🪙${bonus}`;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2000);
+      }
+    }
+  }, 500);
+})();
+
+// ===== COLLECTION COMPLETION TRACKER =====
+function getCollectionPct() {
+  return Math.round((PS.collection.length / PLAYER_DB.length) * 100);
+}
+window.getCollectionPct = getCollectionPct;
+
 // ===== INIT =====
 window.addEventListener('load', () => {
   loadTraining();
   loadDailyChallenges();
+  setTimeout(checkLoginStreak, 1500);
+  setTimeout(checkAchievements, 3000);
 });

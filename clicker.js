@@ -550,6 +550,65 @@ function showGoldenBall() {
   }, 12000);
 }
 
+// ===== LUCKY SPIN =====
+const SPIN_PRIZES = [
+  { label: '+500 coins',    weight: 30, action: () => { window.addCoins(500); } },
+  { label: '+2,000 coins',  weight: 20, action: () => { window.addCoins(2000); } },
+  { label: '+10,000 coins', weight: 10, action: () => { window.addCoins(10000); } },
+  { label: '+1 Gem 💎',     weight: 8,  action: () => { if(window.addGems) window.addGems(1); } },
+  { label: '+3 Gems 💎',    weight: 4,  action: () => { if(window.addGems) window.addGems(3); } },
+  { label: '+1 Prestige PP',weight: 4,  action: () => { CLICKER.prestigePoints = (CLICKER.prestigePoints||0)+1; updateClickerUI(); saveClicker(); } },
+  { label: '2x CPC 30s 🔥', weight: 12, action: () => { const old=CLICKER.cpc; CLICKER.cpc*=2; setTimeout(()=>{CLICKER.cpc=old;updateClickerUI();},30000); } },
+  { label: 'NOTHING 😔',    weight: 12, action: () => {} },
+];
+
+const SPIN_COST = 5000;
+let _spinCooldown = false;
+
+window.doLuckySpin = function() {
+  if (_spinCooldown) { return; }
+  const coins = window.getCoins ? window.getCoins() : 0;
+  if (coins < SPIN_COST) { alert(`Lucky Spin costs 🪙${SPIN_COST.toLocaleString()} coins!`); return; }
+  if (!window.spendCoins(SPIN_COST)) return;
+
+  _spinCooldown = true;
+  const spinBtn = document.getElementById('spinBtn');
+  if (spinBtn) spinBtn.disabled = true;
+
+  // Weighted random prize
+  const total = SPIN_PRIZES.reduce((s,p) => s + p.weight, 0);
+  let r = Math.random() * total;
+  let prize = SPIN_PRIZES[SPIN_PRIZES.length - 1];
+  for (const p of SPIN_PRIZES) {
+    r -= p.weight;
+    if (r <= 0) { prize = p; break; }
+  }
+
+  // Animate the spin display
+  const spinEl = document.getElementById('spinResult');
+  if (spinEl) {
+    spinEl.style.display = 'block';
+    spinEl.textContent = '🎰 Spinning…';
+    spinEl.className = 'spin-result spin-spinning';
+  }
+
+  setTimeout(() => {
+    prize.action();
+    if (spinEl) {
+      spinEl.textContent = `🎉 ${prize.label}!`;
+      spinEl.className = 'spin-result spin-win' + (prize.label.includes('NOTHING') ? ' spin-nothing' : '');
+    }
+    updateClickerUI();
+    renderUpgrades();
+    saveClicker();
+    setTimeout(() => {
+      if (spinEl) spinEl.style.display = 'none';
+      _spinCooldown = false;
+      if (spinBtn) spinBtn.disabled = false;
+    }, 2500);
+  }, 1200);
+};
+
 // ===== AUTO-EARN LOOP =====
 let _autoSaveTick = 0;
 function startClickerLoop() {

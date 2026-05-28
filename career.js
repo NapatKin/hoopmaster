@@ -416,6 +416,10 @@ function renderCareerSeason(el) {
     <div class="career-nav-row">
       <button class="career-btn-nav" onclick="renderCareerLog()">📋 Game Log</button>
       <button class="career-btn-nav" onclick="renderCareerHistory()">🏅 Career Stats</button>
+      ${CAREER._sponsor
+        ? `<div class="career-sponsor-badge">🤝 ${CAREER._sponsor.name} +🪙${CAREER._sponsor.income}/game</div>`
+        : `<button class="career-btn-nav" onclick="careerSignSponsor()">🤝 Sign Sponsor (🪙${(5000+CAREER.season*2000).toLocaleString()})</button>`
+      }
     </div>
     <div id="careerSubView"></div>
   </div>`;
