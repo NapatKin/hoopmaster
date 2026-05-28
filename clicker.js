@@ -487,8 +487,8 @@ window.perkEquipSkin = function(skin) {
 window.togglePerkShop = function() {
   const modal = document.getElementById('perkShopModal');
   if (!modal) return;
-  const isOpen = modal.style.display !== 'none';
-  modal.style.display = isOpen ? 'none' : 'block';
+  const isOpen = modal.style.display === 'flex';
+  modal.style.display = isOpen ? 'none' : 'flex';
   if (!isOpen) renderPerkShop();
 };
 

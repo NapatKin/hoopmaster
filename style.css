@@ -605,6 +605,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI
 .tf-name { font-size: 15px; font-weight: 900; color: #fff; letter-spacing: 1px; margin-bottom: 4px; }
 .tf-detail { font-size: 11px; color: #666; margin-bottom: 8px; }
 .tf-prize { font-size: 13px; font-weight: 800; color: #ffd700; }
+.tf-entry { font-size: 11px; color: #ff8c00; margin: 2px 0; }
 .tourney-active-wrap { max-width: 680px; margin: 0 auto; padding: 10px; display: flex; flex-direction: column; align-items: center; gap: 14px; }
 .tourney-round-badge { background: linear-gradient(135deg,rgba(255,140,0,0.2),rgba(255,60,0,0.2)); border: 1px solid rgba(255,140,0,0.4); color: #ff8c00; padding: 6px 20px; border-radius: 20px; font-size: 12px; font-weight: 800; letter-spacing: 3px; }
 .tourney-results-title, .tourney-next-title { font-size: 12px; font-weight: 800; color: #555; letter-spacing: 2px; text-align: center; margin-top: 4px; }
@@ -642,6 +643,14 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI
 .icon-store-header { margin-bottom: 18px; }
 .icon-store-desc { font-size: 12px; color: #777; line-height: 1.6; }
 .icon-cards-grid { display: flex; gap: 20px; flex-wrap: wrap; justify-content: center; }
+.gem-boost-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:12px; margin-bottom:16px; }
+.gem-boost-card { background:rgba(0,212,255,0.06); border:1px solid rgba(0,212,255,0.25); border-radius:10px; padding:14px; text-align:center; }
+.gem-boost-locked { opacity:0.5; }
+.gem-boost-icon { font-size:28px; margin-bottom:6px; }
+.gem-boost-name { font-size:12px; font-weight:800; color:#fff; }
+.gem-boost-desc { font-size:10px; color:#888; margin:4px 0 6px; line-height:1.4; }
+.gem-boost-cost { font-size:13px; font-weight:900; color:#00d4ff; margin-bottom:8px; }
+.pack-gem-card { border-color:rgba(0,212,255,0.4) !important; }
 .icon-card-outer {
   display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 12px;
   background: rgba(255,215,0,0.04); border: 1px solid rgba(255,215,0,0.2); border-radius: 16px;
@@ -673,7 +682,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI
 .btn-perk-shop:hover { background:rgba(255,215,0,0.22); border-color:#ffd700; }
 .perk-shop-modal {
   position:absolute; inset:0; background:rgba(0,0,0,0.85); z-index:50;
-  display:flex !important; align-items:center; justify-content:center;
+  display:flex; align-items:center; justify-content:center;
 }
 .perk-shop-inner {
   background:linear-gradient(135deg,#1a1a2e,#16213e); border:1px solid rgba(255,215,0,0.3);
@@ -878,6 +887,19 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI
 .career-award-name { font-size:12px; font-weight:800; color:#ffd700; }
 .career-award-coins { color:#ffd700; font-size:15px; font-weight:900; margin-bottom:12px; }
 .career-no-award { color:#666; font-size:13px; padding:20px; }
+
+/* ===== CAREER OFF-SEASON ===== */
+.career-offseason { max-width:600px; margin:0 auto; }
+.career-offseason-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:12px; margin:16px 0; }
+.career-offseason-card { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.1); border-radius:10px; padding:14px; text-align:center; }
+.career-offseason-card:hover { border-color:rgba(255,140,0,0.4); }
+.career-os-locked { opacity:0.45; }
+.career-os-icon { font-size:28px; margin-bottom:6px; }
+.career-os-label { font-size:12px; font-weight:800; color:#fff; margin-bottom:4px; }
+.career-os-stat { font-size:10px; color:#22c55e; margin-bottom:6px; }
+.career-os-cost { font-size:11px; color:#ff8c00; margin-bottom:8px; }
+.career-toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.9); border:1px solid #ffd700; color:#ffd700; padding:10px 20px; border-radius:8px; font-weight:800; font-size:14px; z-index:9999; animation:toastIn 0.3s ease; }
+@keyframes toastIn { from { opacity:0; transform:translateX(-50%) translateY(20px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
 
 /* ===== AUTH / PROFILES ===== */
 .auth-screen-wrap { width:100%; height:100%; display:flex; align-items:center; justify-content:center; position:relative; z-index:2; }

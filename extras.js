@@ -362,12 +362,20 @@ function getSquadOVR() {
   return Math.round(players.reduce((a, p) => a + p.ovr, 0) / players.length);
 }
 
+const TOURNEY_ENTRY = { 4: 2000, 8: 5000 };
+
 window.startTournament = function(size) {
+  const fee = TOURNEY_ENTRY[size] || 2000;
+  if (!window.spendCoins(fee)) {
+    alert(`Entry fee: 🪙${fee.toLocaleString()} coins. Not enough!`);
+    return;
+  }
   const shuffled = [...AI_TEAMS].sort(() => Math.random() - 0.5).slice(0, size - 1);
   const myOVR = getSquadOVR();
   const yourTeam = { name: 'YOUR SQUAD', ovr: myOVR, color: '#ff8c00', isPlayer: true };
   TOURNEY.bracket = [...shuffled, yourTeam].sort(() => Math.random() - 0.5);
   TOURNEY.round = 0; TOURNEY.active = true; TOURNEY.results = []; TOURNEY.size = size;
+  updateCoinsDisplay();
   renderTournamentScreen();
 };
 
@@ -418,12 +426,14 @@ function renderTournamentScreen() {
           <div class="tf-icon">⚡</div>
           <div class="tf-name">Quick Cup</div>
           <div class="tf-detail">4 Teams · 2 Rounds</div>
+          <div class="tf-entry">🎟️ Entry: 🪙2,000</div>
           <div class="tf-prize">🪙 Up to 8,000</div>
         </div>
         <div class="tf-card" onclick="startTournament(8)">
           <div class="tf-icon">🏆</div>
           <div class="tf-name">Championship</div>
           <div class="tf-detail">8 Teams · 3 Rounds</div>
+          <div class="tf-entry">🎟️ Entry: 🪙5,000</div>
           <div class="tf-prize">🪙 Up to 18,000</div>
         </div>
       </div>
@@ -607,18 +617,21 @@ function renderStoreTab(tab) {
   if (tab === 'packs') {
     let html = `<div class="pack-store-wrap"><div class="pack-store-grid">`;
     PACKS.forEach(pack => {
-      const canAfford = window.getCoins() >= pack.cost;
+      const isGemPack = !!pack.gemCost;
+      const canAfford = isGemPack ? (window.getGems ? window.getGems() >= pack.gemCost : false) : window.getCoins() >= pack.cost;
       const oddsList = Object.entries(pack.odds).filter(([,v])=>v>0)
         .map(([k,v])=>`<span style="color:${RARITY[k].textColor}">${RARITY[k].label} ${Math.round(v*100)}%</span>`).join(' · ');
+      const priceLabel = isGemPack ? `💎 ${pack.gemCost} Gems` : `🪙 ${fmtCoins(pack.cost)}`;
+      const btnLabel = canAfford ? 'OPEN PACK' : isGemPack ? `Need ${pack.gemCost} 💎` : 'NOT ENOUGH 🪙';
       html += `
-      <div class="pack-card-store ${canAfford ? '' : 'pack-locked'}">
+      <div class="pack-card-store ${canAfford ? '' : 'pack-locked'} ${isGemPack ? 'pack-gem-card' : ''}">
         <div class="pack-icon">${pack.icon}</div>
         <h3 class="pack-name" style="color:${pack.color}">${pack.name}</h3>
         <div class="pack-desc">${pack.desc}</div>
         <div class="pack-odds">${oddsList}</div>
-        <div class="pack-cost">🪙 ${fmtCoins(pack.cost)}</div>
+        <div class="pack-cost">${priceLabel}</div>
         <button class="btn ${canAfford ? 'btn-primary' : 'btn-secondary'} pack-buy-btn"
-          onclick="buyPackFromStore('${pack.id}')">${canAfford ? 'OPEN PACK' : 'NOT ENOUGH 🪙'}</button>
+          onclick="buyPackFromStore('${pack.id}')">${btnLabel}</button>
       </div>`;
     });
     html += `</div></div>`;
@@ -657,9 +670,30 @@ function renderStoreTab(tab) {
     const playerGems = window.getGems ? window.getGems() : 0;
     let html = `
     <div class="icon-store-header">
-      <p class="icon-store-desc">Exclusive ICON cards — maximum boosted stats + bonus trait. The pinnacle!</p>
+      <p class="icon-store-desc">Exclusive ICON cards, Gem Packs & Boosts. Earn gems by prestiging in Ball Tycoon!</p>
       <div class="icon-store-gems-info">💎 You have <strong>${playerGems} gems</strong> · Earn by prestiging in Ball Tycoon</div>
     </div>
+    <h3 class="upgrade-title" style="padding:8px 0 4px">⚡ GEM BOOSTS</h3>
+    <div class="gem-boost-grid">
+      ${[
+        { id:'boost_coins', icon:'🪙', name:'Coin Rush',    desc:'Instantly earn 50,000 coins', cost:3, action:`gemBuyBoost('coins')` },
+        { id:'boost_pack',  icon:'📦', name:'Gem Pack',     desc:'Open 3 elite+ cards',         cost:8, action:`buyPackFromStore('gem')` },
+        { id:'boost_train', icon:'💪', name:'Mega Train',   desc:'+5 to all stats of 1 player', cost:5, action:`gemBuyBoost('train')` },
+        { id:'boost_mc',    icon:'💳', name:'MC Injection', desc:'+300 Manager Credits',         cost:4, action:`gemBuyBoost('mc')` },
+      ].map(b => {
+        const can = playerGems >= b.cost;
+        return `<div class="gem-boost-card ${can ? '' : 'gem-boost-locked'}">
+          <div class="gem-boost-icon">${b.icon}</div>
+          <div class="gem-boost-name">${b.name}</div>
+          <div class="gem-boost-desc">${b.desc}</div>
+          <div class="gem-boost-cost">💎 ${b.cost}</div>
+          <button class="btn ${can ? 'btn-primary' : 'btn-secondary'}" onclick="${b.action}" ${can ? '' : 'disabled'} style="padding:6px 12px;font-size:11px;min-width:0">
+            ${can ? 'BUY' : `Need ${b.cost} 💎`}
+          </button>
+        </div>`;
+      }).join('')}
+    </div>
+    <h3 class="upgrade-title" style="padding:12px 0 4px">⭐ ICON CARDS</h3>
     <div class="icon-cards-grid">`;
     ICON_PLAYERS.forEach(ic => {
       const base = PLAYER_DB.find(p => p.id === ic.base);
@@ -716,6 +750,33 @@ window.storeMarketBuy = function(playerId) {
     const gc = p ? gemCost(p) : 0;
     alert(gc > 0 ? `Need ${gc} 💎 gems! Prestige in Ball Tycoon to earn gems.` : 'Not enough coins!');
   }
+};
+
+// ===== GEM BOOSTS =====
+window.gemBuyBoost = function(type) {
+  const costs = { coins: 3, train: 5, mc: 4 };
+  const cost = costs[type];
+  if (!cost || !window.spendGems(cost)) { alert('Not enough gems!'); return; }
+
+  if (type === 'coins') {
+    window.addCoins(50000);
+    alert('🪙 +50,000 coins added!');
+  } else if (type === 'train') {
+    const pid = Object.values(PS.squad).filter(Boolean)[0];
+    if (!pid) { alert('No player in squad! Add a player first.'); window.addGems(cost); return; }
+    if (!TRAIN_STATE.boosts[pid]) TRAIN_STATE.boosts[pid] = {};
+    ['sht','spd','drb','def','phy'].forEach(s => {
+      TRAIN_STATE.boosts[pid][s] = Math.min(15, (TRAIN_STATE.boosts[pid][s] || 0) + 5);
+    });
+    saveTraining();
+    const p = PLAYER_DB.find(x => x.id === pid);
+    alert(`💪 +5 all stats applied to ${p ? p.name : 'your player'}!`);
+  } else if (type === 'mc') {
+    if (typeof MGR !== 'undefined') { MGR.credits = (MGR.credits || 0) + 300; saveMGR(); }
+    alert('💳 +300 Manager Credits added!');
+  }
+  updateCoinsDisplay();
+  renderStoreTab('icons');
 };
 
 // ===== SCREEN HOOK =====

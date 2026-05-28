@@ -285,6 +285,7 @@ function update3() {
 
   updateControlledPlayer();
   updateAI();
+  separatePlayers();
   updateBallPhysics();
   checkBallPickup();
   checkShot();
@@ -514,7 +515,7 @@ let aiTick = 0;
 function updateAI() {
   aiTick++;
   players3.forEach(p => {
-    if (p.isUser && p === controlled) return;
+    if (p === controlled) return;
     p.dribbleAnim = (p.dribbleAnim + 0.14) % (Math.PI*2);
 
     // Decide action every AI_INTERVAL frames
@@ -987,6 +988,26 @@ function endGame3() {
     document.getElementById('btn3v3Back').style.display = 'block';
     document.getElementById('btn3v3Again').style.display = 'block';
   }, 2000);
+}
+
+// ── Player separation (prevent overlap) ──
+function separatePlayers() {
+  for (let i = 0; i < players3.length; i++) {
+    for (let j = i + 1; j < players3.length; j++) {
+      const a = players3[i], b = players3[j];
+      const minDist = a.r + b.r;
+      const dx = b.x - a.x, dy = b.y - a.y;
+      const d = Math.sqrt(dx*dx + dy*dy) || 0.01;
+      if (d < minDist) {
+        const push = (minDist - d) / 2;
+        const nx = dx / d, ny = dy / d;
+        a.x = Math.max(CM.cL + a.r, Math.min(CM.cR - a.r, a.x - nx * push));
+        a.y = Math.max(CM.cT + a.r, Math.min(CM.cB - a.r, a.y - ny * push));
+        b.x = Math.max(CM.cL + b.r, Math.min(CM.cR - b.r, b.x + nx * push));
+        b.y = Math.max(CM.cT + b.r, Math.min(CM.cB - b.r, b.y + ny * push));
+      }
+    }
+  }
 }
 
 // ── Helpers ──

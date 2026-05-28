@@ -5,6 +5,7 @@
 const MGR = {
   teamName: 'My Team',
   budget: 500000,
+  credits: 500,            // Manager Credits (MC) — separate from global coins
   tactic: 'balanced',      // attack | balanced | defense
   formation: '2-1-2',      // formations for 5-player basketball
   season: 1,
@@ -49,6 +50,7 @@ function loadMGR() {
   const saved = JSON.parse(localStorage.getItem('mgrState') || 'null');
   if (saved) {
     Object.assign(MGR, saved);
+    if (!MGR.credits) MGR.credits = 500;
     // Restore AI teams
     if (saved.aiTeams) MGR_TEAMS.forEach((t, i) => saved.aiTeams[i] && Object.assign(t, saved.aiTeams[i]));
   }
@@ -110,10 +112,14 @@ function mgrSimMatch(opponentIdx) {
   MGR.week++;
   MGR.results.push(result);
 
-  // Coin reward
-  const reward = win ? 5000 + Math.floor(Math.random() * 3000) : 1500;
-  window.addCoins(reward);
-  result.reward = reward;
+  // Manager Credits reward (separate from global coins)
+  const mcReward = win ? 80 + Math.floor(Math.random() * 40) : 25;
+  MGR.credits += mcReward;
+  // Small global coin bonus too
+  const coinReward = win ? 1500 + Math.floor(Math.random() * 1000) : 400;
+  window.addCoins(coinReward);
+  result.mcReward = mcReward;
+  result.reward = coinReward;
 
   if (window.trackDailyProgress) window.trackDailyProgress('managerWins', win ? 1 : 0);
   saveMGR();
@@ -138,7 +144,8 @@ function mgrEndSeason() {
   else if (myRank <= 3) trophy = { name: 'Top 3 Finish', icon: '🥉', season: MGR.season };
   if (trophy) {
     MGR.trophies.push(trophy);
-    window.addCoins(myRank === 1 ? 50000 : 20000);
+    window.addCoins(myRank === 1 ? 20000 : 8000);
+    MGR.credits += myRank === 1 ? 500 : 200;
   }
 
   // New season reset
@@ -206,6 +213,7 @@ window.mgrStartNew = function() {
   MGR.week = 0; MGR.wins = 0; MGR.losses = 0; MGR.points = 0;
   MGR.results = [];
   MGR.schedule = buildSchedule();
+  if (!MGR.credits) MGR.credits = 500;
   MGR_TEAMS.forEach(t => { t.wins = 0; t.losses = 0; t.pts = 0; });
   MGR.phase = 'season';
   saveMGR();
@@ -222,7 +230,7 @@ function renderMGRSeason(el) {
   <div class="mgr-last-result ${lastResult.win ? 'mgr-win' : 'mgr-loss'}">
     <span>${lastResult.win ? '✅ WIN' : '❌ LOSS'}</span>
     <span>${lastResult.myScore} — ${lastResult.oppScore} vs ${lastResult.opponent}</span>
-    <span class="mgr-reward">+🪙${lastResult.reward.toLocaleString()}</span>
+    <span class="mgr-reward">+🪙${lastResult.reward.toLocaleString()} &nbsp;+${lastResult.mcReward||0}MC</span>
   </div>` : '';
 
   const nextOppIdx = MGR.schedule[MGR.week];
@@ -235,6 +243,7 @@ function renderMGRSeason(el) {
       <div class="mgr-stat-box"><div class="mgr-stat-num">${MGR.wins}W-${MGR.losses}L</div><div class="mgr-stat-lbl">RECORD</div></div>
       <div class="mgr-stat-box"><div class="mgr-stat-num">${matchesLeft}</div><div class="mgr-stat-lbl">MATCHES LEFT</div></div>
       <div class="mgr-stat-box"><div class="mgr-stat-num">${myOVR}</div><div class="mgr-stat-lbl">TEAM OVR</div></div>
+      <div class="mgr-stat-box mgr-credits-box"><div class="mgr-stat-num" style="color:#22c55e">${MGR.credits}</div><div class="mgr-stat-lbl">MC 💳</div></div>
     </div>
 
     ${lastHtml}
@@ -357,18 +366,21 @@ function renderMGRTable(el) {
   </div>`;
 }
 
+// MC prices for transfer market (cheaper than coin prices)
+const MGR_MC_PRICES = { tm1:30, tm2:80, tm3:60, tm4:55, tm5:25, tm6:65, tm7:140, tm8:60, tm9:90, tm10:50, tm11:15, tm12:18 };
+
 function renderMGRTransfer(el) {
-  const budget = MGR.budget;
   const ownedIds = PS.collection;
 
   el.innerHTML = `
   <div class="mgr-transfer">
     <h3 class="mgr-section-title">💸 TRANSFER MARKET</h3>
-    <div class="mgr-budget-bar">Transfer Budget: <strong style="color:#22c55e">🪙${window.getCoins().toLocaleString()}</strong> coins</div>
+    <div class="mgr-budget-bar">Manager Credits: <strong style="color:#22c55e">${MGR.credits} MC 💳</strong> &nbsp;·&nbsp; Earn MC by winning matches</div>
     <div class="mgr-transfer-grid">
       ${TRANSFER_MARKET_PLAYERS.map(p => {
         const owned = ownedIds.includes(p.id);
-        const canAfford = window.getCoins() >= p.price;
+        const mcPrice = MGR_MC_PRICES[p.id] || 50;
+        const canAfford = MGR.credits >= mcPrice;
         return `
         <div class="mgr-transfer-card rarity-${p.rarity}">
           <div class="mgr-transfer-ovr">${p.ovr}</div>
@@ -377,10 +389,10 @@ function renderMGRTransfer(el) {
           <div class="mgr-transfer-stats">
             SHT:${p.stats.sht} SPD:${p.stats.spd} DRB:${p.stats.drb} DEF:${p.stats.def}
           </div>
-          <div class="mgr-transfer-price">🪙${p.price.toLocaleString()}</div>
+          <div class="mgr-transfer-price">💳 ${mcPrice} MC</div>
           ${owned
             ? `<div class="mgr-transfer-owned">✅ OWNED</div>`
-            : `<button class="mgr-btn-buy ${canAfford ? '' : 'mgr-btn-disabled'}" onclick="mgrBuyPlayer('${p.id}')" ${canAfford ? '' : 'disabled'}>BUY</button>`
+            : `<button class="mgr-btn-buy ${canAfford ? '' : 'mgr-btn-disabled'}" onclick="mgrBuyPlayer('${p.id}')" ${canAfford ? '' : 'disabled'}>SIGN</button>`
           }
         </div>`;
       }).join('')}
@@ -393,7 +405,9 @@ window.mgrBuyPlayer = function(id) {
   const p = TRANSFER_MARKET_PLAYERS.find(x => x.id === id);
   if (!p) return;
   if (PS.collection.includes(p.id)) { alert('Already owned!'); return; }
-  if (!window.spendCoins(p.price)) { alert('Not enough coins!'); return; }
+  const mcPrice = MGR_MC_PRICES[p.id] || 50;
+  if (MGR.credits < mcPrice) { alert(`Need ${mcPrice} MC! Win more matches to earn Manager Credits.`); return; }
+  MGR.credits -= mcPrice;
 
   // Add to PLAYER_DB and PS.collection
   const card = {
@@ -403,9 +417,10 @@ window.mgrBuyPlayer = function(id) {
   if (!PLAYER_DB.find(x => x.id === p.id)) PLAYER_DB.push(card);
   PS.collection.push(p.id);
   savePS();
+  saveMGR();
   updateCoinsDisplay();
   if (window.trackDailyProgress) window.trackDailyProgress('marketBuys', 1);
-  alert(`✅ ${p.name} signed! Check My Squad to add them.`);
+  alert(`✅ ${p.name} signed! (-${mcPrice} MC) Check My Squad to add them.`);
   renderManagerScreen();
 };
 

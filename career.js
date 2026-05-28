@@ -9,13 +9,15 @@ const CAREER = {
   gamesTotal: 20,
   wins: 0, losses: 0,
   stats: { pts: 0, reb: 0, ast: 0, stl: 0, blk: 0 },
-  careerStats: { pts: 0, reb: 0, ast: 0, stl: 0, blk: 0, games: 0, seasons: 0 },
+  careerStats: { pts: 0, reb: 0, ast: 0, stl: 0, blk: 0, games: 0, seasons: 0, wins: 0 },
   awards: [],
-  phase: 'menu',        // menu | pick | season | game | awards
+  milestones: [],       // career milestone badges
+  phase: 'menu',        // menu | pick | season | offseason | awards
   gameLog: [],
   development: {},      // stat boosts earned through career
   active: false,
   retireAtSeason: 10,
+  offseasonSlots: 3,    // training actions per off-season
 };
 
 function loadCareer() {
@@ -97,9 +99,13 @@ function careerSimGame() {
   CAREER.careerStats.stl   += gameStl;
   CAREER.careerStats.blk   += gameBlk;
   CAREER.careerStats.games++;
+  if (win) CAREER.careerStats.wins = (CAREER.careerStats.wins || 0) + 1;
 
   CAREER.gameLog.push(result);
-  if (CAREER.gameLog.length > 5) CAREER.gameLog = CAREER.gameLog.slice(-5);
+  // Check career milestones
+  checkCareerMilestones();
+
+  if (CAREER.gameLog.length > 10) CAREER.gameLog = CAREER.gameLog.slice(-10);
 
   if (window.trackDailyProgress) window.trackDailyProgress('careerGames', 1);
 
@@ -160,6 +166,115 @@ function careerEndSeason() {
   return { awards, awardCoins, season: seaDone, ppg, rpg: rpg.toFixed(1), apg: apg.toFixed(1), winRate };
 }
 
+// ===== CAREER MILESTONES =====
+const CAREER_MILESTONES = [
+  { id: 'pts500',   icon: '🏀', name: '500 Career Pts',    key: 'pts',   goal: 500,   gemReward: 2 },
+  { id: 'pts2000',  icon: '⭐', name: '2,000 Career Pts',  key: 'pts',   goal: 2000,  gemReward: 5 },
+  { id: 'pts5000',  icon: '👑', name: '5,000 Career Pts',  key: 'pts',   goal: 5000,  gemReward: 10 },
+  { id: 'games50',  icon: '🎯', name: '50 Games Played',   key: 'games', goal: 50,    gemReward: 3 },
+  { id: 'games100', icon: '💯', name: '100 Games Played',  key: 'games', goal: 100,   gemReward: 8 },
+  { id: 'wins50',   icon: '🏆', name: '50 Career Wins',    key: 'wins',  goal: 50,    gemReward: 5 },
+  { id: 'seas5',    icon: '📅', name: '5 Seasons Played',  key: 'seasons',goal: 5,   gemReward: 5 },
+];
+
+function checkCareerMilestones() {
+  if (!CAREER.milestones) CAREER.milestones = [];
+  const cs = CAREER.careerStats;
+  CAREER_MILESTONES.forEach(m => {
+    if (CAREER.milestones.includes(m.id)) return;
+    const val = m.key === 'seasons' ? (cs.seasons || 0) : (cs[m.key] || 0);
+    if (val >= m.goal) {
+      CAREER.milestones.push(m.id);
+      if (window.addGems) window.addGems(m.gemReward);
+      showCareerToast(`${m.icon} ${m.name} — +${m.gemReward}💎`);
+    }
+  });
+}
+
+function showCareerToast(msg) {
+  const el = document.createElement('div');
+  el.className = 'career-toast';
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+// ===== OFF-SEASON =====
+function renderCareerOffseason(el) {
+  const p = careerPlayer();
+  if (!p) { CAREER.phase = 'pick'; renderCareerScreen(); return; }
+
+  const slots = CAREER.offseasonSlots || 3;
+  const OFFSEASON_ACTIONS = [
+    { id: 'train_sht', icon: '🎯', label: 'Shooting Camp',  stat: 'sht', boost: 2, cost: 8000 },
+    { id: 'train_spd', icon: '⚡', label: 'Speed Training', stat: 'spd', boost: 2, cost: 8000 },
+    { id: 'train_drb', icon: '🏀', label: 'Ball Handling',  stat: 'drb', boost: 2, cost: 8000 },
+    { id: 'train_def', icon: '🛡️', label: 'Defense Drills', stat: 'def', boost: 2, cost: 8000 },
+    { id: 'train_phy', icon: '💪', label: 'Gym & Strength', stat: 'phy', boost: 2, cost: 8000 },
+    { id: 'rest',      icon: '😴', label: 'Rest & Recover', stat: null,  boost: 0, cost: 0, note: '+1 slot next season' },
+  ];
+
+  const used = CAREER._offseasonUsed || 0;
+  const remaining = slots - used;
+
+  el.innerHTML = `
+  <div class="career-offseason">
+    <h3 class="career-section-title">☀️ OFF-SEASON — Season ${CAREER.season - 1} Complete</h3>
+    <p class="career-pick-sub">Choose ${slots} training actions before next season. Remaining: <strong style="color:#ff8c00">${remaining}</strong></p>
+    <div class="career-offseason-grid">
+      ${OFFSEASON_ACTIONS.map(a => {
+        const canAfford = a.cost === 0 || window.getCoins() >= a.cost;
+        const curDev = CAREER.development[a.stat] || 0;
+        return `
+        <div class="career-offseason-card ${canAfford ? '' : 'career-os-locked'}">
+          <div class="career-os-icon">${a.icon}</div>
+          <div class="career-os-label">${a.label}</div>
+          ${a.stat ? `<div class="career-os-stat">+${a.boost} ${a.stat.toUpperCase()} (current dev: +${curDev})</div>` : `<div class="career-os-stat">${a.note}</div>`}
+          ${a.cost > 0 ? `<div class="career-os-cost">🪙${a.cost.toLocaleString()}</div>` : `<div class="career-os-cost" style="color:#22c55e">FREE</div>`}
+          ${remaining > 0 && canAfford
+            ? `<button class="career-btn-nav" onclick="careerOffseasonAction('${a.id}')">TRAIN</button>`
+            : remaining === 0
+              ? ''
+              : `<div style="color:#555;font-size:11px">Need 🪙${a.cost.toLocaleString()}</div>`}
+        </div>`;
+      }).join('')}
+    </div>
+    ${remaining === 0 ? `<button class="career-btn-play" style="margin-top:16px" onclick="careerStartNextSeason()">▶ START SEASON ${CAREER.season}</button>` : ''}
+  </div>`;
+}
+
+window.careerOffseasonAction = function(id) {
+  const OFFSEASON_ACTIONS = [
+    { id: 'train_sht', stat: 'sht', boost: 2, cost: 8000 },
+    { id: 'train_spd', stat: 'spd', boost: 2, cost: 8000 },
+    { id: 'train_drb', stat: 'drb', boost: 2, cost: 8000 },
+    { id: 'train_def', stat: 'def', boost: 2, cost: 8000 },
+    { id: 'train_phy', stat: 'phy', boost: 2, cost: 8000 },
+    { id: 'rest',      stat: null,  boost: 0, cost: 0 },
+  ];
+  const a = OFFSEASON_ACTIONS.find(x => x.id === id);
+  if (!a) return;
+  if (a.cost > 0 && !window.spendCoins(a.cost)) { alert('Not enough coins!'); return; }
+
+  if (a.stat) {
+    CAREER.development[a.stat] = (CAREER.development[a.stat] || 0) + a.boost;
+  } else {
+    // Rest: gain an extra slot next off-season
+    CAREER.offseasonSlots = Math.min(5, (CAREER.offseasonSlots || 3) + 1);
+  }
+  CAREER._offseasonUsed = (CAREER._offseasonUsed || 0) + 1;
+  updateCoinsDisplay();
+  saveCareer();
+  renderCareerScreen();
+};
+
+window.careerStartNextSeason = function() {
+  CAREER.phase = 'season';
+  CAREER._offseasonUsed = 0;
+  saveCareer();
+  renderCareerScreen();
+};
+
 // ===== RENDER =====
 function renderCareerScreen() {
   const el = document.getElementById('careerContent');
@@ -167,9 +282,10 @@ function renderCareerScreen() {
 
   if (!CAREER.active) { renderCareerMenu(el); return; }
   switch (CAREER.phase) {
-    case 'pick':    renderCareerPick(el); break;
-    case 'season':  renderCareerSeason(el); break;
-    case 'awards':  renderCareerAwards(el); break;
+    case 'pick':       renderCareerPick(el); break;
+    case 'season':     renderCareerSeason(el); break;
+    case 'awards':     renderCareerAwards(el); break;
+    case 'offseason':  renderCareerOffseason(el); break;
     default: renderCareerMenu(el);
   }
 }
@@ -385,15 +501,16 @@ function renderCareerAwards(el) {
       </div>`).join('') || '<p class="career-no-award">No awards this season. Work harder next year!</p>'}
     </div>
     ${saved?.awardCoins > 0 ? `<div class="career-award-coins">+🪙${saved.awardCoins.toLocaleString()} coins earned!</div>` : ''}
-    <button class="career-btn-play" onclick="CAREER.phase='season';renderCareerScreen()">▶ CONTINUE TO SEASON ${CAREER.season}</button>
+    <button class="career-btn-play" onclick="CAREER.phase='offseason';CAREER._offseasonUsed=0;saveCareer();renderCareerScreen()">☀️ OFF-SEASON TRAINING</button>
   </div>`;
 }
 
-// Patch careerEndSeason to save result for awards screen
+// Patch careerEndSeason to save result for awards screen then go to offseason
 const _origCareerEndSeason = careerEndSeason;
 window.careerDoEndSeason = function() {
   const result = _origCareerEndSeason();
   localStorage.setItem('_lastCareerResult', JSON.stringify(result));
+  checkCareerMilestones();
   updateCoinsDisplay();
   renderCareerScreen();
 };

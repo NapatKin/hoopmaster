@@ -83,6 +83,9 @@ const PLAYER_DB = [
 
 // ===== PACK DEFINITIONS =====
 const PACKS = [
+  { id:'starter', name:'Starter Pack', icon:'🎒', cost:500,    cards:3, color:'#4a7a4a',
+    odds:{ bronze:0.90, silver:0.10, gold:0,    elite:0,    legend:0 },
+    desc:'3 cards — great for beginners, cheap entry pack' },
   { id:'bronze', name:'Bronze Pack',  icon:'🟫', cost:3000,   cards:5, color:'#8B5E3C',
     odds:{ bronze:0.70, silver:0.25, gold:0.05, elite:0,    legend:0 },
     desc:'Mostly bronze players with a chance of silver' },
@@ -92,12 +95,18 @@ const PACKS = [
   { id:'gold',   name:'Gold Pack',    icon:'🥇', cost:50000,  cards:5, color:'#FFD700',
     odds:{ bronze:0,    silver:0.15, gold:0.55, elite:0.25, legend:0.05 },
     desc:'Mostly gold with elite & legend chance' },
+  { id:'draft',  name:'Draft Pack',   icon:'📋', cost:25000,  cards:3, color:'#007AC1',
+    odds:{ bronze:0,    silver:0.30, gold:0.50, elite:0.20, legend:0 },
+    desc:'3 hand-picked quality players — good value' },
   { id:'elite',  name:'Elite Pack',   icon:'💎', cost:200000, cards:5, color:'#7B2FBE',
     odds:{ bronze:0,    silver:0,    gold:0.10, elite:0.70, legend:0.20 },
     desc:'Guaranteed elite players, high legend chance' },
   { id:'legend', name:'Legend Pack',  icon:'👑', cost:800000, cards:5, color:'#FFD700',
     odds:{ bronze:0,    silver:0,    gold:0,    elite:0.30, legend:0.70 },
     desc:'Guaranteed legends — the best of the best' },
+  { id:'gem',    name:'Gem Pack',     icon:'💫', cost:0,      cards:3, color:'#00d4ff', gemCost:8,
+    odds:{ bronze:0,    silver:0,    gold:0.20, elite:0.60, legend:0.20 },
+    desc:'3 elite+ cards — spend 8 💎 gems to open' },
 ];
 
 // ===== RARITY CONFIG =====
@@ -195,7 +204,12 @@ function rollRarity(odds) {
 function openPack(packId) {
   const pack = PACKS.find(p => p.id === packId);
   if (!pack) return [];
-  if (!window.spendCoins(pack.cost)) return null; // null = can't afford
+  // Gem pack uses gems instead of coins
+  if (pack.gemCost) {
+    if (!window.spendGems(pack.gemCost)) return null;
+  } else {
+    if (!window.spendCoins(pack.cost)) return null; // null = can't afford
+  }
   if (window.trackDailyProgress) window.trackDailyProgress('packsOpened', 1);
   const results = [];
   for (let i = 0; i < pack.cards; i++) {
@@ -360,6 +374,10 @@ function openPlayerPicker(pos) {
 }
 
 function assignSquad(pos, playerId) {
+  // Remove player from any other position they're currently filling
+  Object.keys(PS.squad).forEach(p => {
+    if (PS.squad[p] === playerId && p !== pos) PS.squad[p] = null;
+  });
   PS.squad[pos] = playerId;
   savePS();
   document.getElementById('playerPicker').style.display = 'none';
