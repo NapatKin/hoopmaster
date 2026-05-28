@@ -81,6 +81,61 @@
             <span class="hub-card-label">HOW TO PLAY</span>
             <span class="hub-card-sub">Controls &amp; rules</span>
           </div>
+          <div class="hub-card hub-card-ach" onclick="showScreen('achievementsScreen')">
+            <span class="hub-card-icon">🏆</span>
+            <span class="hub-card-label">ACHIEVEMENTS</span>
+            <span class="hub-card-sub">Unlock &amp; collect</span>
+          </div>
+          <div class="hub-card hub-card-fusion" onclick="showScreen('fusionScreen')">
+            <span class="hub-card-icon">⚗️</span>
+            <span class="hub-card-label">FUSION LAB</span>
+            <span class="hub-card-sub">Merge &amp; upgrade cards</span>
+          </div>
+          <div class="hub-card hub-card-trophy" onclick="showScreen('trophyRoomScreen')">
+            <span class="hub-card-icon">🥇</span>
+            <span class="hub-card-label">TROPHY ROOM</span>
+            <span class="hub-card-sub">Hall of Fame &amp; stats</span>
+          </div>
+          <div class="hub-card hub-card-stats" onclick="showScreen('statsScreen')">
+            <span class="hub-card-icon">📊</span>
+            <span class="hub-card-label">MY STATS</span>
+            <span class="hub-card-sub">Lifetime records &amp; XP</span>
+          </div>
+          <div class="hub-card hub-card-pu" onclick="showScreen('powerUpsScreen')">
+            <span class="hub-card-icon">⚡</span>
+            <span class="hub-card-label">POWER-UPS</span>
+            <span class="hub-card-sub">Buy game boosters</span>
+          </div>
+          <div class="hub-card hub-card-weekly" onclick="showScreen('weeklyChallengeScreen')">
+            <span class="hub-card-icon">🌟</span>
+            <span class="hub-card-label">WEEKLY GOAL</span>
+            <span class="hub-card-sub">Big rewards weekly</span>
+          </div>
+          <div class="hub-card hub-card-spin" onclick="showScreen('freeSpinScreen')">
+            <span class="hub-card-icon">🎰</span>
+            <span class="hub-card-label">FREE SPIN</span>
+            <span class="hub-card-sub">Daily free prizes</span>
+          </div>
+          <div class="hub-card hub-card-trivia" onclick="showScreen('triviaScreen')">
+            <span class="hub-card-icon">📚</span>
+            <span class="hub-card-label">TRIVIA</span>
+            <span class="hub-card-sub">Daily question · 🪙1.5K</span>
+          </div>
+          <div class="hub-card hub-card-potd" onclick="showScreen('playerOfDayScreen')">
+            <span class="hub-card-icon">⭐</span>
+            <span class="hub-card-label">PLAYER OF DAY</span>
+            <span class="hub-card-sub">Daily discount deal</span>
+          </div>
+          <div class="hub-card hub-card-mystery" onclick="showScreen('mysteryBoxScreen')">
+            <span class="hub-card-icon">🎁</span>
+            <span class="hub-card-label">MYSTERY BOX</span>
+            <span class="hub-card-sub">Random reward · 🪙5K</span>
+          </div>
+          <div class="hub-card hub-card-atw" onclick="showScreen('aroundWorldScreen')">
+            <span class="hub-card-icon">🌍</span>
+            <span class="hub-card-label">AROUND WORLD</span>
+            <span class="hub-card-sub">Hit all 7 zones!</span>
+          </div>
         </div>
       </div>
     </div>
@@ -125,6 +180,14 @@
         <div class="mode-card" onclick="startGame('challenge')">
           <div class="mode-icon">🔥</div><h3>SURVIVAL</h3>
           <p>Miss 3 and it's over. How far?</p><span class="mode-tag">HARDCORE</span>
+        </div>
+        <div class="mode-card" onclick="startGame('gauntlet')">
+          <div class="mode-icon">⚔️</div><h3>GAUNTLET</h3>
+          <p>5 lives to start. Survive as long as you can!</p><span class="mode-tag">EXTREME</span>
+        </div>
+        <div class="mode-card" onclick="startGame('rapidFire')">
+          <div class="mode-icon">⚡</div><h3>RAPID FIRE</h3>
+          <p>20 seconds. Double coins. Shoot like a machine!</p><span class="mode-tag">SPEED</span>
         </div>
       </div>
       <button class="btn btn-back" onclick="showScreen('splash')">← BACK</button>
@@ -475,6 +538,138 @@
     </div>
   </div>
 
+  <!-- ═══════════════════════════ ACHIEVEMENTS ═══════════════════════════ -->
+  <div id="achievementsScreen" class="screen">
+    <div class="fullscreen-panel">
+      <div class="panel-header">
+        <button class="btn btn-back panel-back" onclick="showScreen('splash')">← BACK</button>
+        <h2 class="section-title nm">🏆 ACHIEVEMENTS</h2>
+        <div class="global-coins-bar">🪙 <span class="global-coins">0</span></div>
+      </div>
+      <div id="achievementsContent" class="achievements-wrap"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ FUSION LAB ═══════════════════════════ -->
+  <div id="fusionScreen" class="screen">
+    <div class="fullscreen-panel">
+      <div class="panel-header">
+        <button class="btn btn-back panel-back" onclick="showScreen('splash')">← BACK</button>
+        <h2 class="section-title nm">⚗️ FUSION LAB</h2>
+        <div class="global-coins-bar">🪙 <span class="global-coins">0</span></div>
+      </div>
+      <div id="fusionContent" class="fusion-wrap"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ TROPHY ROOM ═══════════════════════════ -->
+  <div id="trophyRoomScreen" class="screen">
+    <div class="fullscreen-panel">
+      <div class="panel-header">
+        <button class="btn btn-back panel-back" onclick="showScreen('splash')">← BACK</button>
+        <h2 class="section-title nm">🥇 TROPHY ROOM</h2>
+        <div class="global-coins-bar">🪙 <span class="global-coins">0</span></div>
+      </div>
+      <div id="trophyContent" class="trophy-wrap"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ MY STATS ═══════════════════════════ -->
+  <div id="statsScreen" class="screen">
+    <div class="fullscreen-panel">
+      <div class="panel-header">
+        <button class="btn btn-back panel-back" onclick="showScreen('splash')">← BACK</button>
+        <h2 class="section-title nm">📊 MY STATS</h2>
+        <div class="global-coins-bar">🪙 <span class="global-coins">0</span></div>
+      </div>
+      <div id="statsContent" class="stats-screen-wrap"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ MYSTERY BOX ═══════════════════════════ -->
+  <div id="mysteryBoxScreen" class="screen">
+    <div class="fullscreen-panel">
+      <div class="panel-header">
+        <button class="btn btn-back panel-back" onclick="showScreen('splash')">← BACK</button>
+        <h2 class="section-title nm">🎁 MYSTERY BOX</h2>
+        <div class="global-coins-bar">🪙 <span class="global-coins">0</span></div>
+      </div>
+      <div id="mysteryBoxContent" class="mystery-box-screen-wrap"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ FREE DAILY SPIN ═══════════════════════════ -->
+  <div id="freeSpinScreen" class="screen">
+    <div class="fullscreen-panel">
+      <div class="panel-header">
+        <button class="btn btn-back panel-back" onclick="showScreen('splash')">← BACK</button>
+        <h2 class="section-title nm">🎰 FREE DAILY SPIN</h2>
+        <div class="global-coins-bar">🪙 <span class="global-coins">0</span></div>
+      </div>
+      <div id="freeSpinContent" class="free-spin-screen-wrap"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ WEEKLY CHALLENGE ═══════════════════════════ -->
+  <div id="weeklyChallengeScreen" class="screen">
+    <div class="fullscreen-panel">
+      <div class="panel-header">
+        <button class="btn btn-back panel-back" onclick="showScreen('splash')">← BACK</button>
+        <h2 class="section-title nm">🌟 WEEKLY CHALLENGE</h2>
+        <div class="global-coins-bar">🪙 <span class="global-coins">0</span></div>
+      </div>
+      <div id="weeklyChallengeContent" class="weekly-challenge-wrap"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ DAILY TRIVIA ═══════════════════════════ -->
+  <div id="triviaScreen" class="screen">
+    <div class="fullscreen-panel">
+      <div class="panel-header">
+        <button class="btn btn-back panel-back" onclick="showScreen('splash')">← BACK</button>
+        <h2 class="section-title nm">📚 DAILY TRIVIA</h2>
+        <div class="global-coins-bar">🪙 <span class="global-coins">0</span></div>
+      </div>
+      <div id="triviaContent" class="trivia-screen-wrap"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ PLAYER OF THE DAY ═══════════════════════════ -->
+  <div id="playerOfDayScreen" class="screen">
+    <div class="fullscreen-panel">
+      <div class="panel-header">
+        <button class="btn btn-back panel-back" onclick="showScreen('splash')">← BACK</button>
+        <h2 class="section-title nm">⭐ PLAYER OF THE DAY</h2>
+        <div class="global-coins-bar">🪙 <span class="global-coins">0</span></div>
+      </div>
+      <div id="playerOfDayContent" class="potd-screen-wrap"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ POWER-UPS ═══════════════════════════ -->
+  <div id="powerUpsScreen" class="screen">
+    <div class="fullscreen-panel">
+      <div class="panel-header">
+        <button class="btn btn-back panel-back" onclick="showScreen('splash')">← BACK</button>
+        <h2 class="section-title nm">⚡ POWER-UPS</h2>
+        <div class="global-coins-bar">🪙 <span class="global-coins">0</span></div>
+      </div>
+      <div id="powerUpsContent" class="powerups-screen-wrap"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ AROUND THE WORLD ═══════════════════════════ -->
+  <div id="aroundWorldScreen" class="screen">
+    <div class="fullscreen-panel">
+      <div class="panel-header">
+        <button class="btn btn-back panel-back" onclick="ATW_STATE.active=false;showScreen('splash')">← BACK</button>
+        <h2 class="section-title nm">🌍 AROUND THE WORLD</h2>
+        <div class="global-coins-bar">🪙 <span class="global-coins">0</span></div>
+      </div>
+      <div id="aroundWorldContent" class="atw-screen-wrap"></div>
+    </div>
+  </div>
+
   <script src="players.js"></script>
   <script src="game.js"></script>
   <script src="clicker.js"></script>
@@ -485,5 +680,6 @@
   <script src="career.js"></script>
   <script src="extras.js"></script>
   <script src="auth.js"></script>
+  <script src="fun_features.js"></script>
 </body>
 </html>

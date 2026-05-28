@@ -237,9 +237,11 @@ function shootBall() {
     maxSpread = Math.max(0, maxSpread - shtBonus * 0.04);
   }
 
+  // Power-up: Precision Shot gives perfect accuracy for next 3 shots
+  if (window._precisionShotsLeft > 0) { maxSpread = 0; window._precisionShotsLeft--; }
   const spread = (Math.random() - 0.5) * maxSpread;
   const speed = 5.5 + currentPower * 0.13;
-  const windEffect = (ap && ap.traits.includes('wind_proof')) ? 0 : STATE.wind * 0.008;
+  const windEffect = (ap && ap.traits.includes('wind_proof')) || window._windStopActive ? 0 : STATE.wind * 0.008;
   ball.vx = Math.cos(aimAngle + spread) * speed + windEffect;
   ball.vy = Math.sin(aimAngle + spread) * speed;
   ball.flying = true;
@@ -376,9 +378,16 @@ function doScore() {
     if (ap.traits.includes('bank_king') && STATE.miniGame === 'bankShot') { pts += 3; showTraitBanner('🏦 Bank King! +3 bonus'); }
   }
 
+  // Power-up: Hot Hand doubles points
+  if (window._hotHandActive) pts = Math.floor(pts * 2);
   STATE.score += pts;
   STATE.shotsMade++;
-  STATE.coinsEarned = (STATE.coinsEarned || 0) + pts * 10;
+  let coinPer = pts * 10;
+  // Power-up: Coin Boost doubles coins
+  if (window._coinBoostActive) coinPer *= 2;
+  // Rapid Fire: double coins
+  if (STATE.mode === 'rapidFire') coinPer *= 2;
+  STATE.coinsEarned = (STATE.coinsEarned || 0) + coinPer;
   document.getElementById('sidebarCoins').textContent = '🪙 ' + STATE.coinsEarned;
   updateSidebar();
   updateStreak();
@@ -430,7 +439,9 @@ function endShot(made) {
     spawnMissParticles(ball.x, ball.y);
     showFloatingScore('MISS', '#ff3333');
     playSound('miss');
-    if (STATE.mode === 'challenge') {
+    if (STATE.mode === 'challenge' || STATE.mode === 'gauntlet') {
+      // Streak Shield power-up absorbs one miss
+      if (window._streakShieldActive) { window._streakShieldActive = false; return; }
       STATE.lives = Math.max(0, STATE.lives - 1);
       updateLives();
       if (STATE.lives === 0) { setTimeout(endGame, 400); return; }
@@ -447,7 +458,7 @@ function advanceShot(made) {
     const limit = STATE.mode === 'threePoint' ? 25 : 10;
     if (STATE.shots >= limit) { setTimeout(endGame, 750); return; }
   }
-  if (STATE.mode === 'challenge') STATE.shots++;
+  if (STATE.mode === 'challenge' || STATE.mode === 'gauntlet') STATE.shots++;
   updateWindRandom();
 }
 
@@ -1044,7 +1055,7 @@ function showGameOver() {
 }
 
 function getStarRating() {
-  const thresholds = { classic: [22, 14], timeAttack: [40, 22], threePoint: [55, 35], challenge: [30, 16] };
+  const thresholds = { classic: [22, 14], timeAttack: [40, 22], threePoint: [55, 35], challenge: [30, 16], gauntlet: [40, 25], rapidFire: [20, 12] };
   const t = thresholds[STATE.mode] || [30, 16];
   return STATE.score >= t[0] ? 3 : STATE.score >= t[1] ? 2 : 1;
 }
@@ -1062,18 +1073,18 @@ function saveScore() {
 // ===== GAME START =====
 function startGame(mode) {
   STATE.mode = mode; STATE.score = 0; STATE.shots = 0; STATE.shotsMade = 0;
-  STATE.streak = 0; STATE.bestStreak = 0; STATE.lives = 3;
-  STATE.timeLeft = 60; STATE.miniGame = null; STATE.running = true;
+  STATE.streak = 0; STATE.bestStreak = 0; STATE.lives = (mode === 'gauntlet') ? 5 : 3;
+  STATE.timeLeft = (mode === 'rapidFire') ? 20 : 60; STATE.miniGame = null; STATE.running = true;
   STATE.coinsEarned = 0;
   document.getElementById('sidebarCoins').textContent = '🪙 0';
   if (typeof updateGameSidebarPlayer === 'function') updateGameSidebarPlayer();
   clearInterval(STATE.timerInterval);
   particles.length = 0;
 
-  document.getElementById('sidebarMode').textContent = { classic:'Classic', timeAttack:'Time Attack', threePoint:'3-Point', challenge:'Survival' }[mode];
+  document.getElementById('sidebarMode').textContent = { classic:'Classic', timeAttack:'Time Attack', threePoint:'3-Point', challenge:'Survival', gauntlet:'Gauntlet ⚔️', rapidFire:'Rapid Fire ⚡' }[mode] || mode;
 
-  const showTimer = mode === 'timeAttack';
-  const showLives = mode === 'challenge';
+  const showTimer = mode === 'timeAttack' || mode === 'rapidFire';
+  const showLives = mode === 'challenge' || mode === 'gauntlet';
   const showShots = !showTimer && !showLives;
   document.getElementById('timerSection').style.display = showTimer ? '' : 'none';
   document.getElementById('livesSection').style.display = showLives ? '' : 'none';
