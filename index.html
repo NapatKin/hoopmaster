@@ -23,119 +23,169 @@
           <span class="hub-profile-name" id="hubProfileName">Guest</span>
           <button class="hub-profile-btn" onclick="showScreen('authScreen')">👤 Profiles</button>
         </div>
-        <button class="btn btn-play" onclick="start3v3()">▶ PLAY 3v3</button>
+        <button class="btn btn-play" onclick="start3v3()">▶ QUICK 3v3</button>
         <button class="btn btn-play-sm" onclick="showScreen('modeSelect')">🎯 Shooting Practice</button>
-        <button class="btn btn-play-sm" onclick="showScreen('oneVoneScreen')" style="background:rgba(255,140,0,0.15);border-color:rgba(255,140,0,0.4);color:#ff8c00">⚔️ 1v1 Game</button>
       </div>
 
-      <!-- Right: feature grid -->
+      <!-- Right: feature grid (categorized) -->
       <div class="hub-right">
-        <div class="hub-grid">
-          <div class="hub-card" onclick="showScreen('squadScreen')">
-            <span class="hub-card-icon">👥</span>
-            <span class="hub-card-label">MY SQUAD</span>
-            <span class="hub-card-sub">Build your team</span>
+        <div class="hub-sections">
+
+          <!-- ── GAME MODES ── -->
+          <div class="hub-section">
+            <div class="hub-section-title">🎮 GAME MODES</div>
+            <div class="hub-grid hub-grid-4">
+              <div class="hub-card hub-card-3v3" onclick="start3v3()">
+                <span class="hub-card-icon">🏀</span>
+                <span class="hub-card-label">3v3 GAME</span>
+                <span class="hub-card-sub">Full court · WASD</span>
+              </div>
+              <div class="hub-card hub-card-shoot" onclick="showScreen('modeSelect')">
+                <span class="hub-card-icon">🎯</span>
+                <span class="hub-card-label">SHOOTING</span>
+                <span class="hub-card-sub">4 modes to choose</span>
+              </div>
+              <div class="hub-card hub-card-1v1" onclick="showScreen('oneVoneScreen')">
+                <span class="hub-card-icon">⚔️</span>
+                <span class="hub-card-label">1v1 GAME</span>
+                <span class="hub-card-sub">Race to 21</span>
+              </div>
+              <div class="hub-card hub-card-atw" onclick="showScreen('aroundWorldScreen')">
+                <span class="hub-card-icon">🌍</span>
+                <span class="hub-card-label">AROUND WORLD</span>
+                <span class="hub-card-sub">Hit all 7 zones!</span>
+              </div>
+              <div class="hub-card" onclick="showScreen('tournamentScreen')">
+                <span class="hub-card-icon">🏆</span>
+                <span class="hub-card-label">TOURNAMENT</span>
+                <span class="hub-card-sub">Win the bracket</span>
+              </div>
+            </div>
           </div>
-          <div class="hub-card hub-card-store" onclick="showScreen('storeScreen')">
-            <span class="hub-card-icon">🛒</span>
-            <span class="hub-card-label">STORE</span>
-            <span class="hub-card-sub">Packs · Market · Icons</span>
+
+          <!-- ── MY TEAM ── -->
+          <div class="hub-section">
+            <div class="hub-section-title">👥 MY TEAM</div>
+            <div class="hub-grid hub-grid-4">
+              <div class="hub-card" onclick="showScreen('squadScreen')">
+                <span class="hub-card-icon">👥</span>
+                <span class="hub-card-label">MY SQUAD</span>
+                <span class="hub-card-sub">Build your team</span>
+              </div>
+              <div class="hub-card" onclick="showScreen('trainingScreen')">
+                <span class="hub-card-icon">💪</span>
+                <span class="hub-card-label">TRAINING</span>
+                <span class="hub-card-sub">Upgrade player stats</span>
+              </div>
+              <div class="hub-card hub-card-fusion" onclick="showScreen('fusionScreen')">
+                <span class="hub-card-icon">⚗️</span>
+                <span class="hub-card-label">FUSION LAB</span>
+                <span class="hub-card-sub">Merge &amp; trade cards</span>
+              </div>
+              <div class="hub-card hub-card-pu" onclick="showScreen('powerUpsScreen')">
+                <span class="hub-card-icon">⚡</span>
+                <span class="hub-card-label">POWER-UPS</span>
+                <span class="hub-card-sub">Buy game boosters</span>
+              </div>
+              <div class="hub-card hub-card-manager" onclick="showScreen('managerScreen')">
+                <span class="hub-card-icon">🏟️</span>
+                <span class="hub-card-label">MANAGER</span>
+                <span class="hub-card-sub">Run your franchise</span>
+              </div>
+              <div class="hub-card hub-card-career" onclick="showScreen('careerScreen')">
+                <span class="hub-card-icon">🏅</span>
+                <span class="hub-card-label">CAREER</span>
+                <span class="hub-card-sub">Player journey</span>
+              </div>
+            </div>
           </div>
-          <div class="hub-card" onclick="showScreen('clickerScreen')">
-            <span class="hub-card-icon">💰</span>
-            <span class="hub-card-label">BALL TYCOON</span>
-            <span class="hub-card-sub">Earn coins</span>
+
+          <!-- ── STORE & CARDS ── -->
+          <div class="hub-section">
+            <div class="hub-section-title">🛒 STORE &amp; CARDS</div>
+            <div class="hub-grid hub-grid-4">
+              <div class="hub-card hub-card-store" onclick="showScreen('storeScreen')">
+                <span class="hub-card-icon">🛒</span>
+                <span class="hub-card-label">STORE</span>
+                <span class="hub-card-sub">Packs · Market · Icons</span>
+              </div>
+              <div class="hub-card hub-card-potd" onclick="showScreen('playerOfDayScreen')">
+                <span class="hub-card-icon">⭐</span>
+                <span class="hub-card-label">PLAYER OF DAY</span>
+                <span class="hub-card-sub">Daily discount deal</span>
+              </div>
+              <div class="hub-card hub-card-mystery" onclick="showScreen('mysteryBoxScreen')">
+                <span class="hub-card-icon">🎁</span>
+                <span class="hub-card-label">MYSTERY BOX</span>
+                <span class="hub-card-sub">Random reward · 🪙5K</span>
+              </div>
+            </div>
           </div>
-          <div class="hub-card" onclick="showScreen('trainingScreen')">
-            <span class="hub-card-icon">💪</span>
-            <span class="hub-card-label">TRAINING</span>
-            <span class="hub-card-sub">Upgrade player stats</span>
+
+          <!-- ── EARN & GRIND ── -->
+          <div class="hub-section">
+            <div class="hub-section-title">💰 EARN &amp; GRIND</div>
+            <div class="hub-grid hub-grid-4">
+              <div class="hub-card" onclick="showScreen('clickerScreen')">
+                <span class="hub-card-icon">💰</span>
+                <span class="hub-card-label">BALL TYCOON</span>
+                <span class="hub-card-sub">Idle coin earner</span>
+              </div>
+              <div class="hub-card" onclick="showScreen('challengesScreen')">
+                <span class="hub-card-icon">📋</span>
+                <span class="hub-card-label">CHALLENGES</span>
+                <span class="hub-card-sub">Daily missions</span>
+              </div>
+              <div class="hub-card hub-card-weekly" onclick="showScreen('weeklyChallengeScreen')">
+                <span class="hub-card-icon">🌟</span>
+                <span class="hub-card-label">WEEKLY GOAL</span>
+                <span class="hub-card-sub">Big rewards weekly</span>
+              </div>
+              <div class="hub-card hub-card-spin" onclick="showScreen('freeSpinScreen')">
+                <span class="hub-card-icon">🎰</span>
+                <span class="hub-card-label">FREE SPIN</span>
+                <span class="hub-card-sub">Daily free prizes</span>
+              </div>
+              <div class="hub-card hub-card-trivia" onclick="showScreen('triviaScreen')">
+                <span class="hub-card-icon">📚</span>
+                <span class="hub-card-label">TRIVIA</span>
+                <span class="hub-card-sub">Daily question · 🪙1.5K</span>
+              </div>
+            </div>
           </div>
-          <div class="hub-card" onclick="showScreen('challengesScreen')">
-            <span class="hub-card-icon">📋</span>
-            <span class="hub-card-label">CHALLENGES</span>
-            <span class="hub-card-sub">Daily missions</span>
+
+          <!-- ── PROGRESS ── -->
+          <div class="hub-section">
+            <div class="hub-section-title">🏆 PROGRESS</div>
+            <div class="hub-grid hub-grid-4">
+              <div class="hub-card hub-card-ach" onclick="showScreen('achievementsScreen')">
+                <span class="hub-card-icon">🏆</span>
+                <span class="hub-card-label">ACHIEVEMENTS</span>
+                <span class="hub-card-sub">Unlock &amp; collect</span>
+              </div>
+              <div class="hub-card hub-card-trophy" onclick="showScreen('trophyRoomScreen')">
+                <span class="hub-card-icon">🥇</span>
+                <span class="hub-card-label">TROPHY ROOM</span>
+                <span class="hub-card-sub">Hall of Fame</span>
+              </div>
+              <div class="hub-card hub-card-stats" onclick="showScreen('statsScreen')">
+                <span class="hub-card-icon">📊</span>
+                <span class="hub-card-label">MY STATS</span>
+                <span class="hub-card-sub">Lifetime records &amp; XP</span>
+              </div>
+              <div class="hub-card" onclick="showScreen('leaderboard')">
+                <span class="hub-card-icon">🥇</span>
+                <span class="hub-card-label">LEADERBOARD</span>
+                <span class="hub-card-sub">Top scores</span>
+              </div>
+              <div class="hub-card hub-card-howto" onclick="showScreen('howToPlay')">
+                <span class="hub-card-icon">❓</span>
+                <span class="hub-card-label">HOW TO PLAY</span>
+                <span class="hub-card-sub">Controls &amp; rules</span>
+              </div>
+            </div>
           </div>
-          <div class="hub-card" onclick="showScreen('tournamentScreen')">
-            <span class="hub-card-icon">🏆</span>
-            <span class="hub-card-label">TOURNAMENT</span>
-            <span class="hub-card-sub">Win the bracket</span>
-          </div>
-          <div class="hub-card hub-card-manager" onclick="showScreen('managerScreen')">
-            <span class="hub-card-icon">🏟️</span>
-            <span class="hub-card-label">MANAGER</span>
-            <span class="hub-card-sub">Run your franchise</span>
-          </div>
-          <div class="hub-card hub-card-career" onclick="showScreen('careerScreen')">
-            <span class="hub-card-icon">🏅</span>
-            <span class="hub-card-label">CAREER</span>
-            <span class="hub-card-sub">Player journey</span>
-          </div>
-          <div class="hub-card" onclick="showScreen('leaderboard')">
-            <span class="hub-card-icon">🥇</span>
-            <span class="hub-card-label">LEADERBOARD</span>
-            <span class="hub-card-sub">Top scores</span>
-          </div>
-          <div class="hub-card hub-card-howto" onclick="showScreen('howToPlay')">
-            <span class="hub-card-icon">❓</span>
-            <span class="hub-card-label">HOW TO PLAY</span>
-            <span class="hub-card-sub">Controls &amp; rules</span>
-          </div>
-          <div class="hub-card hub-card-ach" onclick="showScreen('achievementsScreen')">
-            <span class="hub-card-icon">🏆</span>
-            <span class="hub-card-label">ACHIEVEMENTS</span>
-            <span class="hub-card-sub">Unlock &amp; collect</span>
-          </div>
-          <div class="hub-card hub-card-fusion" onclick="showScreen('fusionScreen')">
-            <span class="hub-card-icon">⚗️</span>
-            <span class="hub-card-label">FUSION LAB</span>
-            <span class="hub-card-sub">Merge &amp; upgrade cards</span>
-          </div>
-          <div class="hub-card hub-card-trophy" onclick="showScreen('trophyRoomScreen')">
-            <span class="hub-card-icon">🥇</span>
-            <span class="hub-card-label">TROPHY ROOM</span>
-            <span class="hub-card-sub">Hall of Fame &amp; stats</span>
-          </div>
-          <div class="hub-card hub-card-stats" onclick="showScreen('statsScreen')">
-            <span class="hub-card-icon">📊</span>
-            <span class="hub-card-label">MY STATS</span>
-            <span class="hub-card-sub">Lifetime records &amp; XP</span>
-          </div>
-          <div class="hub-card hub-card-pu" onclick="showScreen('powerUpsScreen')">
-            <span class="hub-card-icon">⚡</span>
-            <span class="hub-card-label">POWER-UPS</span>
-            <span class="hub-card-sub">Buy game boosters</span>
-          </div>
-          <div class="hub-card hub-card-weekly" onclick="showScreen('weeklyChallengeScreen')">
-            <span class="hub-card-icon">🌟</span>
-            <span class="hub-card-label">WEEKLY GOAL</span>
-            <span class="hub-card-sub">Big rewards weekly</span>
-          </div>
-          <div class="hub-card hub-card-spin" onclick="showScreen('freeSpinScreen')">
-            <span class="hub-card-icon">🎰</span>
-            <span class="hub-card-label">FREE SPIN</span>
-            <span class="hub-card-sub">Daily free prizes</span>
-          </div>
-          <div class="hub-card hub-card-trivia" onclick="showScreen('triviaScreen')">
-            <span class="hub-card-icon">📚</span>
-            <span class="hub-card-label">TRIVIA</span>
-            <span class="hub-card-sub">Daily question · 🪙1.5K</span>
-          </div>
-          <div class="hub-card hub-card-potd" onclick="showScreen('playerOfDayScreen')">
-            <span class="hub-card-icon">⭐</span>
-            <span class="hub-card-label">PLAYER OF DAY</span>
-            <span class="hub-card-sub">Daily discount deal</span>
-          </div>
-          <div class="hub-card hub-card-mystery" onclick="showScreen('mysteryBoxScreen')">
-            <span class="hub-card-icon">🎁</span>
-            <span class="hub-card-label">MYSTERY BOX</span>
-            <span class="hub-card-sub">Random reward · 🪙5K</span>
-          </div>
-          <div class="hub-card hub-card-atw" onclick="showScreen('aroundWorldScreen')">
-            <span class="hub-card-icon">🌍</span>
-            <span class="hub-card-label">AROUND WORLD</span>
-            <span class="hub-card-sub">Hit all 7 zones!</span>
-          </div>
+
         </div>
       </div>
     </div>
@@ -164,6 +214,8 @@
   <div id="modeSelect" class="screen scroll-screen">
     <div class="inner-wrap">
       <h2 class="section-title">SHOOTING PRACTICE</h2>
+
+      <div class="mode-category-label">🏀 STANDARD MODES</div>
       <div class="mode-grid">
         <div class="mode-card" onclick="startGame('classic')">
           <div class="mode-icon">🏀</div><h3>CLASSIC</h3>
@@ -177,19 +229,24 @@
           <div class="mode-icon">🎯</div><h3>3-POINT CONTEST</h3>
           <p>25 shots from deep. Go for perfection.</p><span class="mode-tag">PRECISION</span>
         </div>
+        <div class="mode-card" onclick="startGame('rapidFire')">
+          <div class="mode-icon">⚡</div><h3>RAPID FIRE</h3>
+          <p>20 seconds. Double coins. Shoot fast!</p><span class="mode-tag">SPEED</span>
+        </div>
+      </div>
+
+      <div class="mode-category-label" style="margin-top:22px">💀 CHALLENGE MODES</div>
+      <div class="mode-grid">
         <div class="mode-card" onclick="startGame('challenge')">
           <div class="mode-icon">🔥</div><h3>SURVIVAL</h3>
-          <p>Miss 3 and it's over. How far?</p><span class="mode-tag">HARDCORE</span>
+          <p>Miss 3 and it's over. How far can you go?</p><span class="mode-tag">HARDCORE</span>
         </div>
         <div class="mode-card" onclick="startGame('gauntlet')">
           <div class="mode-icon">⚔️</div><h3>GAUNTLET</h3>
-          <p>5 lives to start. Survive as long as you can!</p><span class="mode-tag">EXTREME</span>
-        </div>
-        <div class="mode-card" onclick="startGame('rapidFire')">
-          <div class="mode-icon">⚡</div><h3>RAPID FIRE</h3>
-          <p>20 seconds. Double coins. Shoot like a machine!</p><span class="mode-tag">SPEED</span>
+          <p>5 lives. Survive as long as you can!</p><span class="mode-tag">EXTREME</span>
         </div>
       </div>
+
       <button class="btn btn-back" onclick="showScreen('splash')">← BACK</button>
     </div>
   </div>
