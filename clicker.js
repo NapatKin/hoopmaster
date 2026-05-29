@@ -15,18 +15,29 @@ const CLICKER = {
 };
 
 const PRESTIGE_PERKS = [
-  { id: 'autoClick',   icon: '🤖', name: 'Auto-Clicker',    cost: 1, desc: '1 free click per second automatically' },
-  { id: 'goldenRush',  icon: '✨', name: 'Golden Rush',     cost: 1, desc: 'Golden balls appear twice as often' },
-  { id: 'discount',    icon: '🏷️', name: 'Bulk Deal',       cost: 2, desc: 'All upgrade costs -25%' },
-  { id: 'headStart',   icon: '🚀', name: 'Head Start',      cost: 2, desc: 'Start with 50,000 coins after each prestige' },
-  { id: 'skinFire',    icon: '🔥', name: 'Fire Ball',       cost: 1, desc: 'Unlock the blazing fire ball skin', skin: 'fire' },
-  { id: 'skinDiamond', icon: '💎', name: 'Diamond Ball',    cost: 2, desc: 'Unlock the diamond ball skin', skin: 'diamond' },
-  { id: 'skinGoat',    icon: '🐐', name: 'GOAT Ball',       cost: 3, desc: 'The legendary GOAT ball skin', skin: 'goat' },
-  { id: 'skinCrown',   icon: '👑', name: 'Crown Ball',      cost: 4, desc: 'The ultimate king of all skins', skin: 'crown' },
+  { id: 'autoClick',   icon: '🤖', name: 'Auto-Clicker',       cost: 1, desc: '1 free click per second automatically' },
+  { id: 'goldenRush',  icon: '✨', name: 'Golden Rush',        cost: 1, desc: 'Golden balls appear twice as often' },
+  { id: 'discount',    icon: '🏷️', name: 'Bulk Deal',          cost: 2, desc: 'All upgrade costs -25%' },
+  { id: 'headStart',   icon: '🚀', name: 'Head Start',         cost: 2, desc: 'Start with 50,000 coins after each prestige' },
+  { id: 'comboKing',   icon: '🔥', name: 'Combo King',         cost: 2, desc: 'Combos give +50% bonus coins per click' },
+  { id: 'doubleAuto',  icon: '⚡', name: 'Turbo Auto',         cost: 3, desc: 'Auto-coins earned every 0.5s instead of 1s' },
+  { id: 'luckyClicks', icon: '🍀', name: 'Lucky Clicks',       cost: 2, desc: '5% chance each click gives 10x coins' },
+  { id: 'bigMilestone',icon: '🎯', name: 'Milestone Bonus',    cost: 2, desc: 'Each milestone gives +2,500 bonus coins' },
+  { id: 'clickCrit',   icon: '💥', name: 'Critical Click',     cost: 3, desc: '10% chance each click is a 3x critical hit' },
+  { id: 'prestige2x',  icon: '⭐', name: 'Prestige Power',     cost: 4, desc: 'Earn 2x prestige points per reset' },
+  { id: 'skinFire',    icon: '🔥', name: 'Fire Ball',          cost: 1, desc: 'Unlock the blazing fire ball skin', skin: 'fire' },
+  { id: 'skinDiamond', icon: '💎', name: 'Diamond Ball',       cost: 2, desc: 'Unlock the diamond ball skin', skin: 'diamond' },
+  { id: 'skinGoat',    icon: '🐐', name: 'GOAT Ball',          cost: 3, desc: 'The legendary GOAT ball skin', skin: 'goat' },
+  { id: 'skinCrown',   icon: '👑', name: 'Crown Ball',         cost: 4, desc: 'The ultimate king of all skins', skin: 'crown' },
+  { id: 'skinRocket',  icon: '🚀', name: 'Rocket Ball',        cost: 2, desc: 'Shoot for the stars!', skin: 'rocket' },
+  { id: 'skinGlobe',   icon: '🌍', name: 'Globe Ball',         cost: 2, desc: 'The whole world in your hands', skin: 'globe' },
+  { id: 'skinThunder', icon: '⚡', name: 'Thunder Ball',       cost: 3, desc: 'Electric and unstoppable', skin: 'thunder' },
+  { id: 'skinUnicorn', icon: '🦄', name: 'Unicorn Ball',       cost: 5, desc: 'Ultra rare mythical skin!', skin: 'unicorn' },
 ];
 
 const BALL_SKINS = {
-  default: '🏀', fire: '🔥', diamond: '💎', goat: '🐐', crown: '👑'
+  default: '🏀', fire: '🔥', diamond: '💎', goat: '🐐', crown: '👑',
+  rocket: '🚀', globe: '🌍', thunder: '⚡', unicorn: '🦄'
 };
 
 // Prestige threshold: 10K, 30K, 90K, 270K...
@@ -61,15 +72,41 @@ const UPGRADES = [
   { id: 'sneaker',   icon: '✨', name: 'Sneaker Empire',       desc: '2.5x ALL coins earned',       cost: 25000,   maxLevel: 2,  cpcBonus: 0,   cpsBonus: 0, mult: 2.5 },
   { id: 'ring',      icon: '💍', name: 'Championship Ring',    desc: '3x ALL coins earned',         cost: 10000,   maxLevel: 1,  cpcBonus: 0,   cpsBonus: 0, mult: 3 },
   { id: 'crypto',    icon: '₿',  name: 'Crypto Play',          desc: '4x ALL coins earned',         cost: 500000,  maxLevel: 1,  cpcBonus: 0,   cpsBonus: 0, mult: 4 },
+  // --- Extended Click upgrades ---
+  { id: 'billboard', icon: '🪧', name: 'Billboard Deal',        desc: '+600 coins per click',        cost: 120000,  maxLevel: 3,  cpcBonus: 600,  cpsBonus: 0 },
+  { id: 'mvp',       icon: '🏆', name: 'MVP Award',             desc: '+1500 coins per click',       cost: 500000,  maxLevel: 2,  cpcBonus: 1500, cpsBonus: 0 },
+  { id: 'hall',      icon: '🎖️', name: 'Hall of Fame Induction',desc: '+5000 coins per click',       cost: 3000000, maxLevel: 1,  cpcBonus: 5000, cpsBonus: 0 },
+  { id: 'jersey',    icon: '👕', name: 'Retired Jersey',        desc: '+200 coins per click',        cost: 80000,   maxLevel: 3,  cpcBonus: 200,  cpsBonus: 0 },
+  { id: 'dynasty',   icon: '🌟', name: 'Dynasty Brand',         desc: '+800 coins per click',        cost: 250000,  maxLevel: 2,  cpcBonus: 800,  cpsBonus: 0 },
+  { id: 'legend_tap',icon: '👑', name: 'Legend\'s Touch',       desc: '+3000 coins per click',       cost: 1500000, maxLevel: 2,  cpcBonus: 3000, cpsBonus: 0 },
+  // --- Extended Auto upgrades ---
+  { id: 'fanapp',    icon: '📱', name: 'Fan App',               desc: '+2,000 coins/sec',            cost: 400000,  maxLevel: 4,  cpcBonus: 0,   cpsBonus: 2000 },
+  { id: 'nftdrop',   icon: '🖼️', name: 'NFT Drop',              desc: '+8,000 coins/sec',            cost: 2000000, maxLevel: 3,  cpcBonus: 0,   cpsBonus: 8000 },
+  { id: 'galactic',  icon: '🚀', name: 'Galactic League',       desc: '+25,000 coins/sec',           cost: 10000000,maxLevel: 2,  cpcBonus: 0,   cpsBonus: 25000 },
+  { id: 'multiverse',icon: '🌌', name: 'Multiverse Brand',      desc: '+75,000 coins/sec',           cost: 50000000,maxLevel: 1,  cpcBonus: 0,   cpsBonus: 75000 },
+  { id: 'social',    icon: '📸', name: 'Social Media Empire',   desc: '+500 coins/sec',              cost: 8000,    maxLevel: 10, cpcBonus: 0,   cpsBonus: 500 },
+  { id: 'podcast',   icon: '🎙️', name: 'Sports Podcast',        desc: '+1,200 coins/sec',            cost: 50000,   maxLevel: 6,  cpcBonus: 0,   cpsBonus: 1200 },
+  { id: 'academy',   icon: '🏫', name: 'Basketball Academy',    desc: '+3,500 coins/sec',            cost: 150000,  maxLevel: 4,  cpcBonus: 0,   cpsBonus: 3500 },
+  { id: 'franchise', icon: '🏢', name: 'Franchise Owner',       desc: '+10,000 coins/sec',           cost: 800000,  maxLevel: 3,  cpcBonus: 0,   cpsBonus: 10000 },
+  // --- More multipliers ---
+  { id: 'dynasty2',  icon: '🔥', name: 'Fire Deal',             desc: '5x ALL coins earned',         cost: 2000000, maxLevel: 1,  cpcBonus: 0,   cpsBonus: 0, mult: 5 },
+  { id: 'goatmult',  icon: '🐐', name: 'GOAT Multiplier',       desc: '7x ALL coins earned',         cost: 20000000,maxLevel: 1,  cpcBonus: 0,   cpsBonus: 0, mult: 7 },
+  { id: 'momentum',  icon: '⚡', name: 'Momentum Boost',        desc: '1.8x click multiplier',       cost: 5000,    maxLevel: 4,  cpcBonus: 0,   cpsBonus: 0, mult: 1.8 },
+  { id: 'clutch2',   icon: '💪', name: 'Clutch Performance',    desc: '2x ALL coins earned',         cost: 15000,   maxLevel: 2,  cpcBonus: 0,   cpsBonus: 0, mult: 2 },
 ];
 
 const MILESTONES = [
-  { coins: 1000,      icon: '🎯', text: 'First 1,000 coins!' },
-  { coins: 10000,     icon: '⭐', text: '10K coins earned!' },
-  { coins: 100000,    icon: '💫', text: '100K coins — you\'re rich!' },
-  { coins: 500000,    icon: '🔥', text: '500K coins! Baller!' },
-  { coins: 1000000,   icon: '🏆', text: '1 MILLION coins! GOAT!' },
-  { coins: 10000000,  icon: '👑', text: '10 MILLION! Legend status!' },
+  { coins: 1000,       icon: '🎯', text: 'First 1,000 coins!' },
+  { coins: 5000,       icon: '🌱', text: '5K coins — getting started!' },
+  { coins: 10000,      icon: '⭐', text: '10K coins earned!' },
+  { coins: 50000,      icon: '💫', text: '50K coins — solid grinder!' },
+  { coins: 100000,     icon: '🔥', text: '100K coins — you\'re rich!' },
+  { coins: 500000,     icon: '💎', text: '500K coins! Baller status!' },
+  { coins: 1000000,    icon: '🏆', text: '1 MILLION coins! GOAT!' },
+  { coins: 5000000,    icon: '🌟', text: '5 MILLION! Superstar!' },
+  { coins: 10000000,   icon: '👑', text: '10 MILLION! Legend status!' },
+  { coins: 50000000,   icon: '🚀', text: '50 MILLION! Dynasty!' },
+  { coins: 100000000,  icon: '🌌', text: '100 MILLION! Galactic!' },
 ];
 const shownMilestones = new Set();
 
@@ -223,6 +260,9 @@ function checkMilestones() {
     if (total >= m.coins && !shownMilestones.has(m.coins)) {
       shownMilestones.add(m.coins);
       showMilestoneToast(m);
+      if (CLICKER.perks.bigMilestone) {
+        window.addCoins && window.addCoins(2500);
+      }
     }
   });
 }
@@ -283,6 +323,28 @@ function clickBall() {
   if (CLICKER.combo >= 50) earned *= 5;
   else if (CLICKER.combo >= 25) earned *= 3;
   else if (CLICKER.combo >= 10) earned *= 2;
+  // Perk: Combo King — extra +50% during combos
+  if (CLICKER.perks.comboKing && CLICKER.combo >= 5) earned = Math.floor(earned * 1.5);
+  // Perk: Lucky Clicks — 5% chance for 10x
+  if (CLICKER.perks.luckyClicks && Math.random() < 0.05) {
+    earned *= 10;
+    const wrap = document.getElementById('clickParticles');
+    if (wrap) {
+      const pop = document.createElement('div'); pop.className = 'coin-pop golden-pop';
+      pop.textContent = '🍀 LUCKY! x10!'; pop.style.left = '30%'; pop.style.top = '10%';
+      wrap.appendChild(pop); setTimeout(() => pop.remove(), 1200);
+    }
+  }
+  // Perk: Critical Click — 10% chance for 3x
+  if (CLICKER.perks.clickCrit && Math.random() < 0.10) {
+    earned = Math.floor(earned * 3);
+    const wrap = document.getElementById('clickParticles');
+    if (wrap) {
+      const pop = document.createElement('div'); pop.className = 'coin-pop golden-pop';
+      pop.textContent = '💥 CRIT! x3!'; pop.style.left = '50%'; pop.style.top = '10%';
+      wrap.appendChild(pop); setTimeout(() => pop.remove(), 1000);
+    }
+  }
   if (CLICKER._rushActive) earned = Math.floor(earned * (CLICKER._rushMult || 1));
 
   CLICKER.totalCoins += earned;
@@ -383,7 +445,7 @@ function prestigeReset() {
   )) return;
 
   CLICKER.prestige = nextLevel;
-  CLICKER.prestigePoints = (CLICKER.prestigePoints || 0) + 1;
+  CLICKER.prestigePoints = (CLICKER.prestigePoints || 0) + (CLICKER.perks.prestige2x ? 2 : 1);
   CLICKER.totalCoins = 0;
   Object.keys(upgradeState).forEach(k => { upgradeState[k].level = 0; });
 
@@ -617,7 +679,8 @@ function startClickerLoop() {
     if (!document.getElementById('clickerScreen')?.classList.contains('active')) return;
     if (CLICKER.cps > 0) {
       const rushMult = CLICKER._rushActive ? (CLICKER._rushMult || 1) : 1;
-      const earned = (CLICKER.cps / 10) * rushMult;
+      const turboMult = CLICKER.perks.doubleAuto ? 2 : 1;
+      const earned = (CLICKER.cps / 10) * rushMult * turboMult;
       CLICKER.totalCoins += earned;
       if (window.addCoins) window.addCoins(earned);
       if (window.trackDailyProgress) window.trackDailyProgress('clickerEarned', earned);
