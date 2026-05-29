@@ -946,6 +946,70 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI
 .career-toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.9); border:1px solid #ffd700; color:#ffd700; padding:10px 20px; border-radius:8px; font-weight:800; font-size:14px; z-index:9999; animation:toastIn 0.3s ease; }
 @keyframes toastIn { from { opacity:0; transform:translateX(-50%) translateY(20px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
 
+/* ===== NEW HUB CARD VARIANTS ===== */
+.hub-card-scratch { border-color:rgba(34,197,94,0.35)!important; }
+.hub-card-scratch:hover { background:rgba(34,197,94,0.12)!important; border-color:rgba(34,197,94,0.7)!important; }
+.hub-card-flip { border-color:rgba(255,215,0,0.35)!important; }
+.hub-card-flip:hover { background:rgba(255,215,0,0.1)!important; }
+.hub-card-draft { border-color:rgba(0,212,255,0.35)!important; }
+.hub-card-draft:hover { background:rgba(0,212,255,0.1)!important; }
+
+/* ===== SCRATCH CARD ===== */
+.scratch-screen-wrap { flex:1; overflow-y:auto; display:flex; align-items:center; justify-content:center; }
+.scratch-wrap { text-align:center; padding:24px 20px; max-width:480px; width:100%; }
+.scratch-title { font-size:24px; font-weight:900; color:#22c55e; letter-spacing:4px; margin-bottom:6px; }
+.scratch-sub { font-size:12px; color:#888; margin-bottom:6px; }
+.scratch-picks { font-size:14px; font-weight:700; color:#ff8c00; margin-bottom:14px; min-height:20px; }
+.scratch-done { font-size:14px; color:#22c55e; padding:14px; background:rgba(34,197,94,0.1); border-radius:10px; }
+.scratch-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; max-width:340px; margin:0 auto 16px; }
+.scratch-tile {
+  aspect-ratio:1; border-radius:10px; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; font-size:22px; font-weight:900;
+  cursor:pointer; transition:all 0.2s; border:2px solid;
+}
+.scratch-hidden { background:rgba(34,197,94,0.15); border-color:rgba(34,197,94,0.5); color:#22c55e; }
+.scratch-hidden:hover { background:rgba(34,197,94,0.3); transform:scale(1.05); }
+.scratch-revealed { background:rgba(255,255,255,0.07); border-color:rgba(255,255,255,0.2); cursor:default; }
+.scratch-miss { background:rgba(255,255,255,0.02); border-color:rgba(255,255,255,0.06); cursor:default; opacity:0.4; }
+.scratch-emoji { font-size:24px; }
+.scratch-val { font-size:10px; color:#aaa; margin-top:2px; }
+.scratch-result { margin-top:12px; padding:14px 20px; border-radius:10px; font-size:15px; font-weight:800; }
+.scratch-win { background:rgba(34,197,94,0.15); color:#22c55e; border:1px solid rgba(34,197,94,0.3); }
+.scratch-lose { background:rgba(255,68,0,0.1); color:#ff6644; border:1px solid rgba(255,68,0,0.2); }
+
+/* ===== COIN FLIP ===== */
+.coinflip-screen-wrap { flex:1; overflow-y:auto; display:flex; align-items:center; justify-content:center; }
+.flip-wrap { text-align:center; padding:24px 20px; max-width:440px; width:100%; }
+.flip-title { font-size:26px; font-weight:900; color:#ffd700; letter-spacing:4px; margin-bottom:6px; }
+.flip-sub { font-size:12px; color:#888; margin-bottom:16px; }
+.flip-coin {
+  font-size:80px; margin:0 auto 12px; display:block; line-height:1;
+  filter:drop-shadow(0 0 20px rgba(255,215,0,0.6));
+  transition:transform 0.3s;
+}
+.flip-heads { animation:flipWin 0.6s ease; }
+.flip-tails { animation:flipLose 0.6s ease; }
+@keyframes flipWin  { 0%{transform:scale(1)}30%{transform:scale(1.4) rotate(20deg)}100%{transform:scale(1)} }
+@keyframes flipLose { 0%{transform:scale(1)}30%{transform:scale(0.6) rotate(-20deg)}100%{transform:scale(1)} }
+.flip-result-label { font-size:18px; font-weight:900; margin-bottom:8px; }
+.flip-win-txt { color:#22c55e; }
+.flip-lose-txt { color:#ff4444; }
+.flip-limit { font-size:11px; color:#666; margin-bottom:10px; }
+.flip-desc { font-size:12px; color:#aaa; margin-bottom:10px; }
+.flip-bets { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; }
+.flip-bet-btn { padding:10px 14px; border-radius:8px; font-size:12px; font-weight:800; cursor:pointer; border:1px solid; transition:all 0.2s; }
+.flip-bet-ok { background:rgba(255,215,0,0.15); border-color:rgba(255,215,0,0.5); color:#ffd700; }
+.flip-bet-ok:hover { background:rgba(255,215,0,0.3); transform:scale(1.05); }
+.flip-bet-no { background:rgba(255,255,255,0.04); border-color:rgba(255,255,255,0.08); color:#444; cursor:default; }
+
+/* ===== DRAFT PICK ===== */
+.draft-screen-wrap { flex:1; overflow-y:auto; display:flex; align-items:center; justify-content:center; }
+.draft-wrap { text-align:center; padding:24px 20px; max-width:660px; width:100%; }
+.draft-title { font-size:22px; font-weight:900; color:#00d4ff; letter-spacing:4px; margin-bottom:6px; }
+.draft-sub { font-size:12px; color:#888; margin-bottom:16px; }
+.draft-cards { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; }
+.draft-card-wrap { display:flex; flex-direction:column; align-items:center; }
+
 /* ===== HUB SECTIONS ===== */
 .hub-sections { display: flex; flex-direction: column; gap: 18px; padding: 4px 2px 16px; }
 .hub-section {}

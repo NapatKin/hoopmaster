@@ -114,11 +114,6 @@
                 <span class="hub-card-label">PLAYER OF DAY</span>
                 <span class="hub-card-sub">Daily discount deal</span>
               </div>
-              <div class="hub-card hub-card-mystery" onclick="showScreen('mysteryBoxScreen')">
-                <span class="hub-card-icon">🎁</span>
-                <span class="hub-card-label">MYSTERY BOX</span>
-                <span class="hub-card-sub">Random reward · 🪙5K</span>
-              </div>
             </div>
           </div>
 
@@ -150,6 +145,33 @@
                 <span class="hub-card-icon">📚</span>
                 <span class="hub-card-label">TRIVIA</span>
                 <span class="hub-card-sub">Daily question · 🪙1.5K</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── GAMBLE & CHANCE ── -->
+          <div class="hub-section">
+            <div class="hub-section-title">🎲 GAMBLE &amp; CHANCE</div>
+            <div class="hub-grid hub-grid-4">
+              <div class="hub-card hub-card-mystery" onclick="showScreen('mysteryBoxScreen')">
+                <span class="hub-card-icon">🎁</span>
+                <span class="hub-card-label">MYSTERY BOX</span>
+                <span class="hub-card-sub">Random reward · 🪙5K</span>
+              </div>
+              <div class="hub-card hub-card-scratch" onclick="showScreen('scratchScreen')">
+                <span class="hub-card-icon">🃏</span>
+                <span class="hub-card-label">SCRATCH CARD</span>
+                <span class="hub-card-sub">Daily scratch &amp; match</span>
+              </div>
+              <div class="hub-card hub-card-flip" onclick="showScreen('coinFlipScreen')">
+                <span class="hub-card-icon">🪙</span>
+                <span class="hub-card-label">COIN FLIP</span>
+                <span class="hub-card-sub">Double or nothing!</span>
+              </div>
+              <div class="hub-card hub-card-draft" onclick="showScreen('draftPickScreen')">
+                <span class="hub-card-icon">📋</span>
+                <span class="hub-card-label">DRAFT PICK</span>
+                <span class="hub-card-sub">Choose 1 of 3 players</span>
               </div>
             </div>
           </div>
@@ -724,6 +746,42 @@
         <div class="global-coins-bar">🪙 <span class="global-coins">0</span></div>
       </div>
       <div id="aroundWorldContent" class="atw-screen-wrap"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ SCRATCH CARD ═══════════════════════════ -->
+  <div id="scratchScreen" class="screen">
+    <div class="fullscreen-panel">
+      <div class="panel-header">
+        <button class="btn btn-back panel-back" onclick="showScreen('splash')">← BACK</button>
+        <h2 class="section-title nm">🃏 SCRATCH CARD</h2>
+        <div class="global-coins-bar">🪙 <span class="global-coins">0</span></div>
+      </div>
+      <div id="scratchContent" class="scratch-screen-wrap"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ COIN FLIP ═══════════════════════════ -->
+  <div id="coinFlipScreen" class="screen">
+    <div class="fullscreen-panel">
+      <div class="panel-header">
+        <button class="btn btn-back panel-back" onclick="showScreen('splash')">← BACK</button>
+        <h2 class="section-title nm">🪙 COIN FLIP</h2>
+        <div class="global-coins-bar">🪙 <span class="global-coins">0</span></div>
+      </div>
+      <div id="coinFlipContent" class="coinflip-screen-wrap"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ DRAFT PICK ═══════════════════════════ -->
+  <div id="draftPickScreen" class="screen">
+    <div class="fullscreen-panel">
+      <div class="panel-header">
+        <button class="btn btn-back panel-back" onclick="showScreen('splash')">← BACK</button>
+        <h2 class="section-title nm">📋 DRAFT PICK</h2>
+        <div class="global-coins-bar">🪙 <span class="global-coins">0</span></div>
+      </div>
+      <div id="draftPickContent" class="draft-screen-wrap"></div>
     </div>
   </div>
 
