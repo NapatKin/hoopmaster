@@ -19,6 +19,7 @@
         <h1 class="game-title">HOOP<span>MASTER</span></h1>
         <p class="tagline">Build your squad.<br>Rule the court.</p>
         <div class="hub-coins">🪙 <span class="global-coins">0</span> &nbsp;<span class="hub-gem-sep">·</span>&nbsp; 💎 <span class="global-gems">0</span></div>
+        <div id="showcaseBar"></div>
         <div class="hub-profile-row">
           <span class="hub-profile-name" id="hubProfileName">Guest</span>
           <button class="hub-profile-btn" onclick="showScreen('authScreen')">👤 Profiles</button>
@@ -161,7 +162,7 @@
               <div class="hub-card hub-card-scratch" onclick="showScreen('scratchScreen')">
                 <span class="hub-card-icon">🃏</span>
                 <span class="hub-card-label">SCRATCH CARD</span>
-                <span class="hub-card-sub">Daily scratch &amp; match</span>
+                <span class="hub-card-sub">1-in-500 jackpot!</span>
               </div>
               <div class="hub-card hub-card-flip" onclick="showScreen('coinFlipScreen')">
                 <span class="hub-card-icon">🪙</span>
@@ -172,6 +173,38 @@
                 <span class="hub-card-icon">📋</span>
                 <span class="hub-card-label">DRAFT PICK</span>
                 <span class="hub-card-sub">Choose 1 of 3 players</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ── UPGRADES & EXTRAS ── -->
+          <div class="hub-section">
+            <div class="hub-section-title">🔧 UPGRADES &amp; EXTRAS</div>
+            <div class="hub-grid hub-grid-4">
+              <div class="hub-card hub-card-arena" onclick="showScreen('arenaUpgradeScreen')">
+                <span class="hub-card-icon">🏟️</span>
+                <span class="hub-card-label">ARENA UPGRADES</span>
+                <span class="hub-card-sub">Permanent buffs</span>
+              </div>
+              <div class="hub-card hub-card-cardlv" onclick="showScreen('cardLevelScreen')">
+                <span class="hub-card-icon">⭐</span>
+                <span class="hub-card-label">CARD LEVEL UP</span>
+                <span class="hub-card-sub">Boost your cards</span>
+              </div>
+              <div class="hub-card hub-card-rarup" onclick="showScreen('rarityUpgradeScreen')">
+                <span class="hub-card-icon">✨</span>
+                <span class="hub-card-label">RARITY UPGRADE</span>
+                <span class="hub-card-sub">Bronze → Silver → Gold</span>
+              </div>
+              <div class="hub-card hub-card-pio" onclick="showScreen('prestigeIconScreen')">
+                <span class="hub-card-icon">👑</span>
+                <span class="hub-card-label">PRESTIGE ICONS</span>
+                <span class="hub-card-sub">Exclusive prestige cards</span>
+              </div>
+              <div class="hub-card hub-card-bounty" onclick="showScreen('bountyScreen')">
+                <span class="hub-card-icon">📌</span>
+                <span class="hub-card-label">BOUNTY BOARD</span>
+                <span class="hub-card-sub">Collection targets</span>
               </div>
             </div>
           </div>
@@ -782,6 +815,66 @@
         <div class="global-coins-bar">🪙 <span class="global-coins">0</span></div>
       </div>
       <div id="draftPickContent" class="draft-screen-wrap"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ CARD LEVEL UP ═══════════════════════════ -->
+  <div id="cardLevelScreen" class="screen">
+    <div class="fullscreen-panel">
+      <div class="panel-header">
+        <button class="btn btn-back panel-back" onclick="showScreen('splash')">← BACK</button>
+        <h2 class="section-title nm">⭐ CARD LEVEL UP</h2>
+        <div class="global-coins-bar">🪙 <span class="global-coins">0</span></div>
+      </div>
+      <div id="cardLevelContent" class="cardlevel-wrap"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ BOUNTY BOARD ═══════════════════════════ -->
+  <div id="bountyScreen" class="screen">
+    <div class="fullscreen-panel">
+      <div class="panel-header">
+        <button class="btn btn-back panel-back" onclick="showScreen('splash')">← BACK</button>
+        <h2 class="section-title nm">📌 BOUNTY BOARD</h2>
+        <div class="global-coins-bar">🪙 <span class="global-coins">0</span></div>
+      </div>
+      <div id="bountyContent" class="bounty-screen-wrap"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ ARENA UPGRADES ═══════════════════════════ -->
+  <div id="arenaUpgradeScreen" class="screen">
+    <div class="fullscreen-panel">
+      <div class="panel-header">
+        <button class="btn btn-back panel-back" onclick="showScreen('splash')">← BACK</button>
+        <h2 class="section-title nm">🏟️ ARENA UPGRADES</h2>
+        <div class="global-coins-bar">🪙 <span class="global-coins">0</span></div>
+      </div>
+      <div id="arenaUpContent" class="arena-up-screen-wrap"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ PRESTIGE ICONS ═══════════════════════════ -->
+  <div id="prestigeIconScreen" class="screen">
+    <div class="fullscreen-panel">
+      <div class="panel-header">
+        <button class="btn btn-back panel-back" onclick="showScreen('splash')">← BACK</button>
+        <h2 class="section-title nm">👑 PRESTIGE ICONS</h2>
+        <div class="global-coins-bar">🪙 <span class="global-coins">0</span></div>
+      </div>
+      <div id="prestigeIconContent" class="pio-screen-wrap"></div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════ RARITY UPGRADE ═══════════════════════════ -->
+  <div id="rarityUpgradeScreen" class="screen">
+    <div class="fullscreen-panel">
+      <div class="panel-header">
+        <button class="btn btn-back panel-back" onclick="showScreen('splash')">← BACK</button>
+        <h2 class="section-title nm">✨ RARITY UPGRADE</h2>
+        <div class="global-coins-bar">🪙 <span class="global-coins">0</span></div>
+      </div>
+      <div id="rarityUpContent" class="rarup-screen-wrap"></div>
     </div>
   </div>
 

@@ -946,7 +946,21 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI
 .career-toast { position:fixed; bottom:80px; left:50%; transform:translateX(-50%); background:rgba(0,0,0,0.9); border:1px solid #ffd700; color:#ffd700; padding:10px 20px; border-radius:8px; font-weight:800; font-size:14px; z-index:9999; animation:toastIn 0.3s ease; }
 @keyframes toastIn { from { opacity:0; transform:translateX(-50%) translateY(20px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
 
+/* ===== SHOWCASE BAR ===== */
+.showcase-bar { display:flex; gap:6px; flex-wrap:wrap; margin-top:6px; }
+.showcase-chip { display:flex; align-items:center; gap:5px; padding:4px 8px; border-radius:8px; border:1px solid; font-size:11px; }
+
 /* ===== NEW HUB CARD VARIANTS ===== */
+.hub-card-arena  { border-color:rgba(255,140,0,0.35)!important; }
+.hub-card-arena:hover { background:rgba(255,140,0,0.12)!important; }
+.hub-card-cardlv { border-color:rgba(255,215,0,0.35)!important; }
+.hub-card-cardlv:hover { background:rgba(255,215,0,0.1)!important; }
+.hub-card-rarup  { border-color:rgba(168,85,247,0.35)!important; }
+.hub-card-rarup:hover { background:rgba(168,85,247,0.1)!important; }
+.hub-card-pio    { border-color:rgba(255,215,0,0.5)!important; }
+.hub-card-pio:hover { background:rgba(255,215,0,0.14)!important; }
+.hub-card-bounty { border-color:rgba(255,100,0,0.35)!important; }
+.hub-card-bounty:hover { background:rgba(255,100,0,0.1)!important; }
 .hub-card-scratch { border-color:rgba(34,197,94,0.35)!important; }
 .hub-card-scratch:hover { background:rgba(34,197,94,0.12)!important; border-color:rgba(34,197,94,0.7)!important; }
 .hub-card-flip { border-color:rgba(255,215,0,0.35)!important; }
@@ -1001,6 +1015,87 @@ html, body { width: 100%; height: 100%; overflow: hidden; font-family: 'Segoe UI
 .flip-bet-ok { background:rgba(255,215,0,0.15); border-color:rgba(255,215,0,0.5); color:#ffd700; }
 .flip-bet-ok:hover { background:rgba(255,215,0,0.3); transform:scale(1.05); }
 .flip-bet-no { background:rgba(255,255,255,0.04); border-color:rgba(255,255,255,0.08); color:#444; cursor:default; }
+
+/* ===== SCRATCH CARD REDESIGN ===== */
+.scratch-lobby { text-align:center; padding:20px; max-width:700px; margin:0 auto; }
+.scratch-tier-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:14px; margin:16px 0; }
+.scratch-tier-card { background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.12); border-radius:12px; padding:16px; text-align:center; }
+.scratch-tier-locked { opacity:0.5; }
+.scratch-tier-icon { font-size:36px; margin-bottom:6px; }
+.scratch-tier-name { font-size:15px; font-weight:900; margin-bottom:4px; letter-spacing:1px; }
+.scratch-tier-desc { font-size:11px; color:#888; margin-bottom:8px; }
+.scratch-tier-cost { font-size:13px; font-weight:700; color:#ff8c00; margin-bottom:8px; }
+.scratch-buy-btn { width:100%; }
+.scratch-odds-note { font-size:11px; color:#555; margin-top:12px; }
+.scratch-active-wrap { text-align:center; padding:16px; max-width:420px; margin:0 auto; }
+.scratch-active-header { display:flex; justify-content:space-between; align-items:center; padding:8px 0; margin-bottom:10px; font-size:13px; font-weight:700; }
+.scratch-reveal-hint { font-size:11px; color:#888; }
+.scratch-q { font-size:28px; color:#ff8c00; font-weight:900; }
+.scratch-jackpot { background:rgba(255,215,0,0.2); color:#ffd700; border:2px solid #ffd700; animation:glowPulse 1s infinite; }
+
+/* ===== CARD LEVEL UP ===== */
+.cardlevel-wrap { flex:1; overflow-y:auto; padding:16px; scrollbar-width:thin; }
+.cardlv-header { max-width:800px; margin:0 auto 12px; }
+.cardlv-desc { font-size:12px; color:#888; }
+.cardlv-list { max-width:800px; margin:0 auto; display:flex; flex-direction:column; gap:8px; }
+.cardlv-row { display:flex; align-items:center; gap:12px; padding:10px 14px; background:rgba(255,255,255,0.03); border-radius:8px; border:1px solid rgba(255,255,255,0.07); }
+.cardlv-info { flex:1; }
+.cardlv-name { font-size:13px; font-weight:800; }
+.cardlv-sub { font-size:10px; color:#666; display:block; margin-top:2px; }
+.cardlv-stars { font-size:10px; letter-spacing:1px; min-width:90px; }
+.cardlv-btn { flex-shrink:0; }
+
+/* ===== BOUNTY BOARD ===== */
+.bounty-screen-wrap { flex:1; overflow-y:auto; padding:20px; }
+.bounty-wrap { max-width:600px; margin:0 auto; }
+.bounty-title { font-size:20px; font-weight:900; color:#ff8c00; letter-spacing:2px; margin-bottom:6px; }
+.bounty-sub { font-size:12px; color:#888; margin-bottom:16px; }
+.bounty-list { display:flex; flex-direction:column; gap:10px; }
+.bounty-row { display:flex; align-items:center; gap:12px; padding:14px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:10px; }
+.bounty-done { border-color:rgba(255,140,0,0.4); background:rgba(255,140,0,0.06); }
+.bounty-claimed { opacity:0.5; }
+.bounty-info { flex:1; }
+.bounty-label { font-size:13px; font-weight:700; }
+.bounty-prog { font-size:11px; color:#888; margin-top:2px; }
+.bounty-action { min-width:80px; text-align:right; }
+
+/* ===== ARENA UPGRADES ===== */
+.arena-up-screen-wrap { flex:1; overflow-y:auto; padding:20px; }
+.arena-up-wrap { max-width:800px; margin:0 auto; }
+.arena-up-desc { font-size:12px; color:#888; margin-bottom:16px; }
+.arena-up-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(180px,1fr)); gap:12px; }
+.arena-up-card { background:rgba(255,255,255,0.04); border:1px solid rgba(255,140,0,0.2); border-radius:12px; padding:16px; text-align:center; }
+.arena-up-owned { border-color:rgba(34,197,94,0.4); background:rgba(34,197,94,0.06); }
+.arena-up-name { font-size:13px; font-weight:800; color:#ff8c00; margin-bottom:4px; }
+.arena-up-desc-txt { font-size:11px; color:#888; margin-bottom:8px; line-height:1.5; }
+.arena-up-cost { font-size:12px; font-weight:700; color:#ffd700; margin-bottom:8px; }
+.arena-up-btn { width:100%; }
+
+/* ===== PRESTIGE ICONS ===== */
+.pio-screen-wrap { flex:1; overflow-y:auto; padding:20px; }
+.pio-wrap { max-width:700px; margin:0 auto; text-align:center; }
+.pio-title { font-size:22px; font-weight:900; color:#ffd700; letter-spacing:3px; margin-bottom:6px; }
+.pio-desc { font-size:12px; color:#888; margin-bottom:16px; }
+.pio-grid { display:flex; gap:16px; justify-content:center; flex-wrap:wrap; }
+.pio-card { background:rgba(255,215,0,0.06); border:1px solid rgba(255,215,0,0.25); border-radius:14px; padding:20px 16px; text-align:center; min-width:160px; }
+.pio-locked { opacity:0.4; filter:grayscale(0.8); }
+.pio-owned { border-color:rgba(255,215,0,0.6); background:rgba(255,215,0,0.1); }
+.pio-badge { font-size:10px; padding:3px 8px; border-radius:20px; display:inline-block; font-weight:700; letter-spacing:1px; margin-bottom:6px; }
+.pio-btn { width:100%; }
+
+/* ===== RARITY UPGRADE ===== */
+.rarup-screen-wrap { flex:1; overflow-y:auto; padding:20px; }
+.rarup-wrap { max-width:700px; margin:0 auto; text-align:center; }
+.rarup-title { font-size:22px; font-weight:900; color:#a855f7; letter-spacing:3px; margin-bottom:6px; }
+.rarup-desc { font-size:12px; color:#888; margin-bottom:16px; }
+.rarup-grid { display:flex; gap:12px; justify-content:center; flex-wrap:wrap; }
+.rarup-card { background:rgba(255,255,255,0.04); border:1px solid rgba(168,85,247,0.2); border-radius:12px; padding:16px 12px; text-align:center; min-width:150px; }
+.rarup-from { font-size:13px; font-weight:800; }
+.rarup-arrow { font-size:18px; color:#a855f7; margin:4px 0; }
+.rarup-to { font-size:13px; font-weight:800; }
+.rarup-owned { font-size:11px; color:#888; margin:4px 0; }
+.rarup-cost { font-size:12px; color:#ffd700; font-weight:700; margin-bottom:8px; }
+.rarup-btn { width:100%; }
 
 /* ===== DRAFT PICK ===== */
 .draft-screen-wrap { flex:1; overflow-y:auto; display:flex; align-items:center; justify-content:center; }

@@ -513,11 +513,21 @@ function renderTournamentScreen() {
 
 // ===== ICON STORE (Special Cards) =====
 const ICON_PLAYERS = [
-  { id:'ico_mj',     base:'mj',     name:'ICON Jordan',   ovr:99, boostedStats:{sht:99,spd:99,drb:99,def:99,phy:95}, extraTrait:'bank_king',    gemCost:20 },
-  { id:'ico_lebron', base:'lebron', name:'ICON LeBron',   ovr:99, boostedStats:{sht:96,spd:95,drb:99,def:96,phy:99}, extraTrait:'wind_proof',   gemCost:15 },
-  { id:'ico_kobe',   base:'kobe',   name:'ICON Kobe',     ovr:98, boostedStats:{sht:99,spd:97,drb:99,def:96,phy:92}, extraTrait:'magic_touch',  gemCost:15 },
-  { id:'ico_curry',  base:'curry',  name:'ICON Curry',    ovr:97, boostedStats:{sht:99,spd:96,drb:97,def:86,phy:86}, extraTrait:'bank_king',    gemCost:12 },
-  { id:'ico_giannis',base:'giannis',name:'ICON Giannis',  ovr:98, boostedStats:{sht:88,spd:99,drb:98,def:99,phy:99}, extraTrait:'glass_cleaner',gemCost:12 },
+  { id:'ico_mj',      base:'mj',       name:'ICON Jordan',     ovr:99, boostedStats:{sht:99,spd:99,drb:99,def:99,phy:95}, extraTrait:'bank_king',     gemCost:20 },
+  { id:'ico_lebron',  base:'lebron',   name:'ICON LeBron',     ovr:99, boostedStats:{sht:96,spd:95,drb:99,def:96,phy:99}, extraTrait:'wind_proof',    gemCost:15 },
+  { id:'ico_kobe',    base:'kobe',     name:'ICON Kobe',       ovr:98, boostedStats:{sht:99,spd:97,drb:99,def:96,phy:92}, extraTrait:'magic_touch',   gemCost:15 },
+  { id:'ico_curry',   base:'curry',    name:'ICON Curry',      ovr:97, boostedStats:{sht:99,spd:96,drb:97,def:86,phy:86}, extraTrait:'bank_king',     gemCost:12 },
+  { id:'ico_giannis', base:'giannis',  name:'ICON Giannis',    ovr:98, boostedStats:{sht:88,spd:99,drb:98,def:99,phy:99}, extraTrait:'glass_cleaner', gemCost:12 },
+  { id:'ico_shaq',    base:'shaq',     name:'ICON Shaq',       ovr:99, boostedStats:{sht:80,spd:88,drb:90,def:99,phy:99}, extraTrait:'glass_cleaner', gemCost:15 },
+  { id:'ico_kd',      base:'kd',       name:'ICON Durant',     ovr:99, boostedStats:{sht:99,spd:94,drb:98,def:92,phy:92}, extraTrait:'deep_range',    gemCost:14 },
+  { id:'ico_wade',    base:'wade',     name:'ICON Wade',       ovr:98, boostedStats:{sht:93,spd:99,drb:96,def:92,phy:95}, extraTrait:'clutch_gene',   gemCost:12 },
+  { id:'ico_ai',      base:'ai',       name:'ICON Iverson',    ovr:98, boostedStats:{sht:95,spd:99,drb:99,def:86,phy:88}, extraTrait:'quick_release', gemCost:12 },
+  { id:'ico_magic',   base:'magic',    name:'ICON Magic',      ovr:98, boostedStats:{sht:90,spd:94,drb:99,def:88,phy:95}, extraTrait:'floor_general', gemCost:12 },
+  { id:'ico_bird',    base:'bird',     name:'ICON Bird',       ovr:98, boostedStats:{sht:99,spd:85,drb:93,def:89,phy:92}, extraTrait:'sharpshooter',  gemCost:12 },
+  { id:'ico_dirk',    base:'dirk',     name:'ICON Dirk',       ovr:98, boostedStats:{sht:99,spd:82,drb:90,def:85,phy:92}, extraTrait:'deep_range',    gemCost:10 },
+  { id:'ico_tmac',    base:'tmac',     name:'ICON TMac',       ovr:98, boostedStats:{sht:96,spd:98,drb:97,def:90,phy:93}, extraTrait:'hot_hand',      gemCost:10 },
+  { id:'ico_hakeem',  base:'hakeem',   name:'ICON Hakeem',     ovr:99, boostedStats:{sht:85,spd:90,drb:93,def:99,phy:98}, extraTrait:'magic_touch',   gemCost:14 },
+  { id:'ico_wilt',    base:'wilt',     name:'ICON Wilt',       ovr:99, boostedStats:{sht:85,spd:93,drb:93,def:99,phy:99}, extraTrait:'legend_aura',   gemCost:18 },
 ];
 
 function renderIconStore() {

@@ -1038,16 +1038,67 @@ window.showScreen = function(id) {
 // ===== SQUAD SYNERGY ON HUB CARD OPEN =====
 // (Squad synergy checked via showScreen hook above)
 
-// ===== SCRATCH CARD =====
-const SCRATCH_PRIZES = [
-  { emoji:'🪙', label:'500',    coins:500,  weight:30 },
-  { emoji:'🪙', label:'1,000',  coins:1000, weight:25 },
-  { emoji:'🪙', label:'2,000',  coins:2000, weight:18 },
-  { emoji:'🪙', label:'5,000',  coins:5000, weight:10 },
-  { emoji:'💎', label:'1 Gem',  gems:1,     weight:8  },
-  { emoji:'🏀', label:'Pack',   pack:true,  weight:5  },
-  { emoji:'💎', label:'2 Gems', gems:2,     weight:3  },
-  { emoji:'🎉', label:'JACKPOT',coins:20000,weight:1  },
+// ===== SCRATCH CARD (GAMBLING — buyable, no daily limit) =====
+const SCRATCH_TIERS = [
+  {
+    id:'basic', name:'Basic Scratch', icon:'🎟️', cost:500, color:'#888',
+    desc:'Match 3 to win! 1 in 500 jackpot.',
+    symbols:[
+      { emoji:'🪙', label:'500c',   coins:500,   weight:30 },
+      { emoji:'💵', label:'200c',   coins:200,   weight:40 },
+      { emoji:'⭐', label:'1Kc',    coins:1000,  weight:15 },
+      { emoji:'🔥', label:'3Kc',    coins:3000,  weight:8  },
+      { emoji:'💎', label:'1 Gem',  gems:1,      weight:5  },
+      { emoji:'🏆', label:'JACKPOT',coins:50000, weight:2  },
+    ],
+    jackpotChance: 1/500,
+    miniWinChance: 0.18,
+  },
+  {
+    id:'silver', name:'Silver Scratch', icon:'🥈', cost:2000, color:'#c0c0c0',
+    desc:'Better odds. 1 in 300 jackpot: Bronze card!',
+    symbols:[
+      { emoji:'🪙', label:'1Kc',    coins:1000,  weight:30 },
+      { emoji:'💵', label:'500c',   coins:500,   weight:25 },
+      { emoji:'⭐', label:'5Kc',    coins:5000,  weight:15 },
+      { emoji:'🔥', label:'15Kc',   coins:15000, weight:8  },
+      { emoji:'💎', label:'2 Gems', gems:2,      weight:6  },
+      { emoji:'🃏', label:'Bronze!',bcard:'bronze', weight:2 },
+      { emoji:'🏆', label:'JACKPOT',bcard:'silver', weight:1 },
+    ],
+    jackpotChance: 1/300,
+    miniWinChance: 0.20,
+  },
+  {
+    id:'gold', name:'Gold Scratch', icon:'🥇', cost:10000, color:'#ffd700',
+    desc:'High stakes. 1 in 200 jackpot: Silver/Gold card!',
+    symbols:[
+      { emoji:'🪙', label:'5Kc',    coins:5000,  weight:25 },
+      { emoji:'💵', label:'2Kc',    coins:2000,  weight:20 },
+      { emoji:'⭐', label:'20Kc',   coins:20000, weight:15 },
+      { emoji:'🔥', label:'50Kc',   coins:50000, weight:6  },
+      { emoji:'💎', label:'3 Gems', gems:3,      weight:5  },
+      { emoji:'🃏', label:'Gold!',  bcard:'gold',weight:3  },
+      { emoji:'🏆', label:'JACKPOT',bcard:'elite',weight:1 },
+    ],
+    jackpotChance: 1/200,
+    miniWinChance: 0.22,
+  },
+  {
+    id:'diamond', name:'Diamond Scratch', icon:'💎', cost:50000, color:'#00d4ff',
+    desc:'Ultra rare. 1 in 100 jackpot: LEGEND card!',
+    symbols:[
+      { emoji:'🪙', label:'25Kc',   coins:25000,  weight:20 },
+      { emoji:'💵', label:'10Kc',   coins:10000,  weight:20 },
+      { emoji:'⭐', label:'100Kc',  coins:100000, weight:10 },
+      { emoji:'🔥', label:'250Kc',  coins:250000, weight:4  },
+      { emoji:'💎', label:'5 Gems', gems:5,       weight:4  },
+      { emoji:'🃏', label:'Elite!', bcard:'elite', weight:3  },
+      { emoji:'🏆', label:'LEGEND!',bcard:'legend',weight:1  },
+    ],
+    jackpotChance: 1/100,
+    miniWinChance: 0.25,
+  },
 ];
 
 function weightedPick(prizes) {
@@ -1057,84 +1108,160 @@ function weightedPick(prizes) {
   return prizes[prizes.length - 1];
 }
 
+function generateScratchTiles(tier) {
+  const jackpot = Math.random() < tier.jackpotChance;
+  const miniWin = !jackpot && Math.random() < tier.miniWinChance;
+  const tiles = [];
+  for (let i = 0; i < 9; i++) tiles.push(weightedPick(tier.symbols));
+
+  if (jackpot) {
+    const jp = tier.symbols[tier.symbols.length - 1];
+    tiles[0] = jp; tiles[1] = jp; tiles[2] = jp;
+  } else if (miniWin) {
+    const win = weightedPick(tier.symbols.slice(0, -1));
+    const pos = [0,1,2,3,4,5,6,7,8].sort(() => Math.random()-0.5).slice(0,2);
+    pos.forEach(p => tiles[p] = win);
+  }
+  return tiles.sort(() => Math.random() - 0.5);
+}
+
+function claimScratchPrize(tile) {
+  if (tile.coins) window.addCoins(tile.coins);
+  if (tile.gems) window.addGems(tile.gems);
+  if (tile.bcard) {
+    const pool = PLAYER_DB.filter(p => p.rarity === tile.bcard && !p.id.startsWith('ico_') && !PS.collection.includes(p.id));
+    const p = pool.length ? pool[Math.floor(Math.random()*pool.length)] : null;
+    if (p) { PS.collection.push(p.id); savePS(); checkCollectionMilestones(); return p.name; }
+  }
+  return null;
+}
+
 let _scratchState = null;
+let _scratchTierId = 'basic';
 
 function renderScratchCard() {
   const container = document.getElementById('scratchContent');
   if (!container) return;
-  const today = todayKey();
-  const done = localStorage.getItem('hm_scratch_date') === today;
 
-  if (done && !_scratchState) {
-    container.innerHTML = `<div class="scratch-wrap"><div class="scratch-title">🃏 DAILY SCRATCH CARD</div>
-      <p class="scratch-done">✅ Already scratched today! Come back tomorrow.</p></div>`;
+  // Lobby — show tier selection and current active card
+  if (!_scratchState) {
+    const coins = window.getCoins();
+    let html = `<div class="scratch-lobby">
+      <h3 class="scratch-title">🃏 SCRATCH CARDS</h3>
+      <p class="scratch-sub">Buy a scratch card — reveal all 9 tiles, match 3 to win big!</p>
+      <div class="scratch-tier-grid">`;
+    SCRATCH_TIERS.forEach(t => {
+      const can = coins >= t.cost;
+      html += `<div class="scratch-tier-card ${can ? '' : 'scratch-tier-locked'}">
+        <div class="scratch-tier-icon">${t.icon}</div>
+        <div class="scratch-tier-name" style="color:${t.color}">${t.name}</div>
+        <div class="scratch-tier-desc">${t.desc}</div>
+        <div class="scratch-tier-cost">🪙 ${t.cost.toLocaleString()}</div>
+        <button class="btn ${can ? 'btn-primary' : 'btn-secondary'} scratch-buy-btn"
+          onclick="${can ? `buyScratchCard('${t.id}')` : ''}" ${can ? '' : 'disabled'}
+          style="min-width:0;padding:7px 14px;font-size:11px">
+          ${can ? `BUY ${t.icon}` : `Need 🪙${t.cost.toLocaleString()}`}
+        </button>
+      </div>`;
+    });
+    html += `</div>
+      <p class="scratch-odds-note">💡 Tip: match 3 identical symbols = big win! Match 2 = mini win. Fully reveal all 9 tiles.</p>
+    </div>`;
+    container.innerHTML = html;
     return;
   }
 
-  if (!_scratchState) {
-    // Generate 9 tiles, guarantee that at most 2 share the same value (no accidental jackpot)
-    const tiles = [];
-    for (let i = 0; i < 9; i++) tiles.push(weightedPick(SCRATCH_PRIZES));
-    _scratchState = { tiles, revealed: Array(9).fill(false), picks: 0, done: false, result: null };
-  }
+  const tier = SCRATCH_TIERS.find(t => t.id === _scratchTierId);
+  const { tiles, revealed, done: sDone, result } = _scratchState;
+  const allRevealed = revealed.every(Boolean);
 
-  const { tiles, revealed, picks, done: sDone } = _scratchState;
-  const remaining = 3 - picks;
-
-  let html = `<div class="scratch-wrap">
-    <div class="scratch-title">🃏 DAILY SCRATCH CARD</div>
-    <p class="scratch-sub">Pick 3 tiles — match any 2 to win that prize!</p>
-    <p class="scratch-picks">${sDone ? '' : `${remaining} pick${remaining !== 1 ? 's' : ''} left`}</p>
+  let html = `<div class="scratch-active-wrap">
+    <div class="scratch-active-header">
+      <span style="color:${tier.color}">${tier.icon} ${tier.name}</span>
+      <span class="scratch-reveal-hint">${allRevealed ? 'All revealed!' : `Tap tiles to reveal (${revealed.filter(Boolean).length}/9)`}</span>
+    </div>
     <div class="scratch-grid">`;
 
   tiles.forEach((tile, i) => {
     const rev = revealed[i];
-    html += `<div class="scratch-tile ${rev ? 'scratch-revealed' : picks >= 3 || sDone ? 'scratch-miss' : 'scratch-hidden'}"
-      onclick="${(!rev && picks < 3 && !sDone) ? `scratchTile(${i})` : ''}">
-      ${rev ? `<div class="scratch-emoji">${tile.emoji}</div><div class="scratch-val">${tile.label}</div>` : '?'}
+    html += `<div class="scratch-tile ${rev ? 'scratch-revealed' : sDone ? 'scratch-miss' : 'scratch-hidden'}"
+      onclick="${(!rev && !sDone) ? `scratchReveal(${i})` : ''}">
+      ${rev ? `<div class="scratch-emoji">${tile.emoji}</div><div class="scratch-val">${tile.label}</div>` : '<div class="scratch-q">?</div>'}
     </div>`;
   });
 
   html += `</div>`;
 
-  if (sDone && _scratchState.result) {
-    const res = _scratchState.result;
-    html += `<div class="scratch-result ${res.won ? 'scratch-win' : 'scratch-lose'}">
-      ${res.won ? `🎉 Match! Won ${res.prize.emoji} ${res.prize.label}!` : '😞 No match — try again tomorrow!'}
-    </div>`;
+  if (!sDone && !allRevealed) {
+    html += `<button class="btn btn-secondary" onclick="revealAllScratch()" style="min-width:0;padding:8px 18px;font-size:11px;margin-top:10px">⚡ Reveal All</button>`;
   }
 
-  if (sDone) html += `<button class="btn btn-secondary" onclick="_scratchState=null;renderScratchCard()" style="min-width:0;padding:8px 20px;margin-top:12px;font-size:11px">← View Results</button>`;
+  if (sDone || allRevealed) {
+    if (!sDone) finalizeScratch();
+    const res = _scratchState.result;
+    if (res) {
+      html += `<div class="scratch-result ${res.tier === 'jackpot' ? 'scratch-jackpot' : res.won ? 'scratch-win' : 'scratch-lose'}">
+        ${res.tier === 'jackpot' ? `🎉🎉 JACKPOT! ${res.desc}` : res.won ? `✅ MATCH x${res.count}! ${res.desc}` : '😞 No match. Try again!'}
+      </div>`;
+    }
+    html += `<button class="btn btn-primary" onclick="_scratchState=null;renderScratchCard()" style="min-width:0;padding:9px 22px;margin-top:10px;font-size:12px">🎟️ Buy Another</button>`;
+  }
+
   html += `</div>`;
   container.innerHTML = html;
 }
 
-window.scratchTile = function(idx) {
-  if (!_scratchState || _scratchState.done || _scratchState.revealed[idx] || _scratchState.picks >= 3) return;
-  _scratchState.revealed[idx] = true;
-  _scratchState.picks++;
-
-  if (_scratchState.picks === 3) {
-    _scratchState.done = true;
-    localStorage.setItem('hm_scratch_date', todayKey());
-    // Check for match
-    const revTiles = _scratchState.tiles.filter((_, i) => _scratchState.revealed[i]);
-    const counts = {};
-    revTiles.forEach(t => { counts[t.label] = (counts[t.label] || 0) + 1; });
-    const matchLabel = Object.keys(counts).find(k => counts[k] >= 2);
-    if (matchLabel) {
-      const prize = _scratchState.tiles.find(t => t.label === matchLabel);
-      _scratchState.result = { won: true, prize };
-      if (prize.coins) window.addCoins(prize.coins);
-      if (prize.gems) window.addGems(prize.gems);
-      if (prize.pack) { openPack && openPack('starter'); }
-      updateCoinsDisplay();
-    } else {
-      _scratchState.result = { won: false };
-    }
-  }
+window.buyScratchCard = function(tierId) {
+  const tier = SCRATCH_TIERS.find(t => t.id === tierId);
+  if (!tier || !window.spendCoins(tier.cost)) { alert(`Need 🪙${tier.cost.toLocaleString()}!`); return; }
+  _scratchTierId = tierId;
+  _scratchState = { tiles: generateScratchTiles(tier), revealed: Array(9).fill(false), done: false, result: null };
+  updateCoinsDisplay();
   renderScratchCard();
 };
+
+window.scratchReveal = function(idx) {
+  if (!_scratchState || _scratchState.done || _scratchState.revealed[idx]) return;
+  _scratchState.revealed[idx] = true;
+  if (_scratchState.revealed.every(Boolean)) finalizeScratch();
+  renderScratchCard();
+};
+
+window.revealAllScratch = function() {
+  if (!_scratchState) return;
+  _scratchState.revealed = Array(9).fill(true);
+  finalizeScratch();
+  renderScratchCard();
+};
+
+function finalizeScratch() {
+  if (!_scratchState || _scratchState.done) return;
+  _scratchState.done = true;
+  const tiles = _scratchState.tiles;
+  const counts = {};
+  tiles.forEach(t => { counts[t.label] = (counts[t.label] || 0) + 1; });
+  const best = Object.entries(counts).sort((a,b) => b[1]-a[1])[0];
+
+  if (best && best[1] >= 3) {
+    const prize = tiles.find(t => t.label === best[0]);
+    const extra = claimScratchPrize(prize);
+    const desc = prize.bcard ? `${prize.bcard.toUpperCase()} card${extra ? ': '+extra : ''}!` :
+                 prize.gems ? `+${prize.gems} 💎` : `+🪙${prize.coins?.toLocaleString()}`;
+    _scratchState.result = { won: true, tier: 'jackpot', count: 3, desc };
+    updateCoinsDisplay();
+  } else if (best && best[1] >= 2) {
+    const prize = tiles.find(t => t.label === best[0]);
+    const desc = prize.coins ? `+🪙${prize.coins.toLocaleString()}` : prize.gems ? `+${prize.gems} 💎` : prize.label;
+    // Only partial prize for 2-match
+    const partial = prize.coins ? Math.floor(prize.coins * 0.4) : null;
+    if (partial) window.addCoins(partial);
+    if (prize.gems) window.addGems(1);
+    _scratchState.result = { won: true, tier: 'mini', count: 2, desc: `Mini win! ${partial ? `+🪙${partial.toLocaleString()}` : '+1💎'}` };
+    updateCoinsDisplay();
+  } else {
+    _scratchState.result = { won: false };
+  }
+}
 
 // ===== COIN FLIP GAMBLE =====
 const FLIP_LIMITS = { daily: 30000 };
@@ -1357,6 +1484,468 @@ function triggerRandomEvent() {
 // of the first wrapper. We just add the trigger here since the first wrapper already runs.
 
 // (screen hooks for scratch/flip/draft added into main showScreen wrapper below)
+
+// =============================================
+// 10 MORE COOL FEATURES
+// =============================================
+
+// ===== COOL 1: TOURNAMENT BETTING =====
+let _betState = { active: false, amount: 0, teamBet: null };
+
+window.placeTournamentBet = function(amount, teamName) {
+  if (!window.spendCoins(amount)) { showToast('Not enough coins to bet!', '#ff4444'); return; }
+  _betState = { active: true, amount, teamBet: teamName };
+  showToast(`🎰 Bet 🪙${amount.toLocaleString()} on ${teamName}!`, '#ffd700');
+  updateCoinsDisplay();
+};
+
+window.resolveTournamentBet = function(winnerName) {
+  if (!_betState.active) return;
+  if (_betState.teamBet === winnerName) {
+    const payout = _betState.amount * 3;
+    window.addCoins(payout);
+    showToast(`🎉 Bet WON! +🪙${payout.toLocaleString()}!`, '#22c55e', 500);
+    updateCoinsDisplay();
+  } else {
+    showToast(`😢 Bet lost — ${winnerName} won instead.`, '#ff4444', 500);
+  }
+  _betState = { active: false, amount: 0, teamBet: null };
+};
+
+// ===== COOL 2: CARD LEVEL-UP SYSTEM =====
+function getCardLevels() {
+  return JSON.parse(localStorage.getItem('hm_cardLevels') || '{}');
+}
+function saveCardLevels(l) { localStorage.setItem('hm_cardLevels', JSON.stringify(l)); }
+
+function getCardLevel(pid) { return getCardLevels()[pid] || 0; }
+
+function renderCardLevelUp() {
+  const container = document.getElementById('cardLevelContent');
+  if (!container) return;
+  const levels = getCardLevels();
+  const coins = window.getCoins();
+  const allPlayers = PS.collection.map(id => PLAYER_DB.find(p => p.id === id)).filter(Boolean)
+    .sort((a,b) => b.ovr - a.ovr);
+
+  let html = `<div class="cardlv-header">
+    <p class="cardlv-desc">Spend coins to level up your cards! Each level adds +1 OVR to base stats. Max level 10.</p>
+  </div><div class="cardlv-list">`;
+
+  allPlayers.forEach(p => {
+    const lv = levels[p.id] || 0;
+    const maxed = lv >= 10;
+    const cost = Math.floor(2000 * Math.pow(2.2, lv));
+    const can = !maxed && coins >= cost;
+    const r = RARITY[p.rarity];
+    html += `<div class="cardlv-row">
+      <div class="cardlv-info">
+        <span class="cardlv-name" style="color:${r.textColor}">${p.name}</span>
+        <span class="cardlv-sub">${p.ovr + lv} OVR${lv > 0 ? ` (+${lv})` : ''} · ${r.label}</span>
+      </div>
+      <div class="cardlv-stars">${'⭐'.repeat(lv)}${'☆'.repeat(10-lv)}</div>
+      <button class="btn ${can ? 'btn-primary' : 'btn-secondary'} cardlv-btn"
+        onclick="${maxed || !can ? '' : `levelUpCard('${p.id}')`}"
+        ${maxed || !can ? 'disabled' : ''}
+        style="min-width:0;padding:5px 12px;font-size:10px">
+        ${maxed ? '✓ MAX' : can ? `⬆️ ${fmtCoins(cost)}` : `🔒 ${fmtCoins(cost)}`}
+      </button>
+    </div>`;
+  });
+
+  html += `</div>`;
+  container.innerHTML = html;
+}
+
+window.levelUpCard = function(pid) {
+  const levels = getCardLevels();
+  const lv = levels[pid] || 0;
+  if (lv >= 10) return;
+  const cost = Math.floor(2000 * Math.pow(2.2, lv));
+  if (!window.spendCoins(cost)) { alert('Not enough coins!'); return; }
+  levels[pid] = lv + 1;
+  saveCardLevels(levels);
+  updateCoinsDisplay();
+  showToast(`⭐ Card leveled up! ${PLAYER_DB.find(p=>p.id===pid)?.name} is now Level ${lv+1}`, '#ffd700');
+  renderCardLevelUp();
+};
+
+// Patch getEffectiveStat to include card levels
+const _origGetEffStat = window.getEffectiveStat;
+window.getEffectiveStat = function(pid, stat) {
+  const base = _origGetEffStat ? _origGetEffStat(pid, stat) : 0;
+  return Math.min(99, base + (getCardLevel(pid) || 0));
+};
+
+// ===== COOL 3: SET COMPLETION BONUSES =====
+function checkSetCompletion() {
+  const teams = {};
+  PS.collection.forEach(id => {
+    const p = PLAYER_DB.find(pl => pl.id === id);
+    if (p) teams[p.team] = (teams[p.team] || 0) + 1;
+  });
+  const claimed = JSON.parse(localStorage.getItem('hm_setBonus') || '{}');
+  let earned = false;
+  Object.entries(teams).forEach(([team, count]) => {
+    if (count >= 5 && !claimed[team]) {
+      claimed[team] = true;
+      const bonus = 15000;
+      window.addCoins(bonus);
+      showToast(`🏀 TEAM SET: ${team} (5 players)! +🪙${bonus.toLocaleString()}`, '#22c55e', 400);
+      earned = true;
+    }
+    if (count >= 10 && !claimed[team+'_10']) {
+      claimed[team+'_10'] = true;
+      window.addGems(2);
+      showToast(`👑 FULL ROSTER: ${team} (10 players)! +2💎`, '#ffd700', 600);
+      earned = true;
+    }
+  });
+  if (earned) { localStorage.setItem('hm_setBonus', JSON.stringify(claimed)); updateCoinsDisplay(); }
+}
+
+// ===== COOL 4: BOUNTY BOARD =====
+const BOUNTY_TYPES = [
+  { key:'bronze', label:'Collect 3 Bronze', goal:3, coins:3000, rarity:'bronze' },
+  { key:'silver', label:'Collect 2 Silver', goal:2, coins:8000, rarity:'silver' },
+  { key:'gold',   label:'Collect 1 Gold',   goal:1, coins:20000, rarity:'gold' },
+  { key:'elite',  label:'Collect 1 Elite',  goal:1, coins:50000, gems:1, rarity:'elite' },
+  { key:'legend', label:'Collect 1 Legend', goal:1, coins:100000, gems:3, rarity:'legend' },
+];
+
+function renderBountyBoard() {
+  const container = document.getElementById('bountyContent');
+  if (!container) return;
+  const claimed = JSON.parse(localStorage.getItem('hm_bounties') || '{}');
+  const today = todayKey();
+  if (!claimed.date || claimed.date !== today) {
+    localStorage.setItem('hm_bounties', JSON.stringify({ date: today }));
+  }
+  const bState = JSON.parse(localStorage.getItem('hm_bounties') || '{}');
+
+  let html = `<div class="bounty-wrap">
+    <h3 class="bounty-title">📌 BOUNTY BOARD</h3>
+    <p class="bounty-sub">Complete collection targets for big rewards! Resets daily.</p>
+    <div class="bounty-list">`;
+
+  BOUNTY_TYPES.forEach(b => {
+    const count = PS.collection.filter(id => {
+      const p = PLAYER_DB.find(pl => pl.id === id);
+      return p && p.rarity === b.rarity;
+    }).length;
+    const progress = Math.min(b.goal, count);
+    const done = progress >= b.goal;
+    const isClaimed = bState[b.key];
+    const reward = `🪙${(b.coins||0).toLocaleString()}${b.gems ? ` +${b.gems}💎` : ''}`;
+
+    html += `<div class="bounty-row ${done ? 'bounty-done' : ''} ${isClaimed ? 'bounty-claimed' : ''}">
+      <div class="bounty-info">
+        <div class="bounty-label">${b.label}</div>
+        <div class="bounty-prog">${progress}/${b.goal} · ${reward}</div>
+      </div>
+      <div class="bounty-action">
+        ${isClaimed ? '<span style="color:#22c55e;font-size:12px">✓ CLAIMED</span>'
+          : done ? `<button class="btn-claim" onclick="claimBounty('${b.key}')">CLAIM</button>`
+          : `<div style="font-size:11px;color:#555">${progress}/${b.goal}</div>`}
+      </div>
+    </div>`;
+  });
+
+  html += `</div></div>`;
+  container.innerHTML = html;
+}
+
+window.claimBounty = function(key) {
+  const b = BOUNTY_TYPES.find(x => x.key === key);
+  if (!b) return;
+  const bState = JSON.parse(localStorage.getItem('hm_bounties') || '{}');
+  if (bState[key]) return;
+  bState[key] = true;
+  localStorage.setItem('hm_bounties', JSON.stringify(bState));
+  if (b.coins) window.addCoins(b.coins);
+  if (b.gems) window.addGems(b.gems);
+  updateCoinsDisplay();
+  showToast(`📌 Bounty claimed: ${b.label}! ${b.coins ? `+🪙${b.coins.toLocaleString()}` : ''}${b.gems ? ` +${b.gems}💎` : ''}`, '#ff8c00');
+  renderBountyBoard();
+};
+
+// ===== COOL 5: ARENA UPGRADES =====
+const ARENA_UPGRADES = [
+  { id:'crowd1',    name:'Louder Crowd',       desc:'+100 coins per shooting game', cost:10000,  bonus:'gameCoin', val:100  },
+  { id:'crowd2',    name:'Sell-Out Arena',      desc:'+300 coins per shooting game', cost:40000,  bonus:'gameCoin', val:300  },
+  { id:'hotcourt',  name:'Lucky Court',         desc:'+5% chance for lucky game',    cost:25000,  bonus:'lucky',    val:0.05 },
+  { id:'gym',       name:'Premium Gym',         desc:'Training costs -20%',          cost:30000,  bonus:'trainDisc',val:0.20 },
+  { id:'analytics', name:'Analytics Suite',     desc:'+15 XP per game',              cost:20000,  bonus:'xpBonus',  val:15   },
+  { id:'jumbotron', name:'Jumbotron',            desc:'XP earned x1.5',               cost:80000,  bonus:'xpMult',   val:1.5  },
+  { id:'vip',       name:'VIP Section',          desc:'+500 coins per tournament win',cost:100000, bonus:'tourCoin', val:500  },
+  { id:'legacy',    name:'Legacy Wing',          desc:'+1 gem every 5 games played',  cost:500000, bonus:'gemPer5',  val:1    },
+];
+
+function getArenaUpgrades() {
+  return JSON.parse(localStorage.getItem('hm_arenaUps') || '{}');
+}
+function saveArenaUpgrades(u) { localStorage.setItem('hm_arenaUps', JSON.stringify(u)); }
+
+function renderArenaUpgradesScreen() {
+  const container = document.getElementById('arenaUpContent');
+  if (!container) return;
+  const owned = getArenaUpgrades();
+  const coins = window.getCoins();
+
+  let html = `<div class="arena-up-wrap">
+    <p class="arena-up-desc">Permanent upgrades to your arena — boost passive income, XP, and bonuses forever!</p>
+    <div class="arena-up-grid">`;
+
+  ARENA_UPGRADES.forEach(u => {
+    const have = owned[u.id];
+    const can = !have && coins >= u.cost;
+    html += `<div class="arena-up-card ${have ? 'arena-up-owned' : ''}">
+      <div class="arena-up-name">${have ? '✓ ' : ''}${u.name}</div>
+      <div class="arena-up-desc-txt">${u.desc}</div>
+      <div class="arena-up-cost">${have ? 'OWNED' : `🪙${u.cost.toLocaleString()}`}</div>
+      <button class="btn ${have ? 'btn-secondary' : can ? 'btn-primary' : 'btn-secondary'} arena-up-btn"
+        onclick="${have || !can ? '' : `buyArenaUpgrade('${u.id}')`}"
+        ${have || !can ? 'disabled' : ''}
+        style="min-width:0;padding:6px 12px;font-size:11px">
+        ${have ? '✓ OWNED' : can ? 'BUY' : `Need 🪙${fmtCoins(u.cost)}`}
+      </button>
+    </div>`;
+  });
+
+  html += `</div></div>`;
+  container.innerHTML = html;
+}
+
+window.buyArenaUpgrade = function(id) {
+  const u = ARENA_UPGRADES.find(x => x.id === id);
+  if (!u || !window.spendCoins(u.cost)) return;
+  const owned = getArenaUpgrades();
+  owned[id] = true;
+  saveArenaUpgrades(owned);
+  updateCoinsDisplay();
+  showToast(`🏟️ Arena upgrade: ${u.name} purchased!`, '#ff8c00');
+  renderArenaUpgradesScreen();
+};
+
+function getArenaBonus(type) {
+  const owned = getArenaUpgrades();
+  return ARENA_UPGRADES.filter(u => u.bonus === type && owned[u.id]).reduce((a,u) => a + u.val, 0);
+}
+
+// Hook arena bonuses into game end
+const _origEndGameArena = window.endGame;
+window.endGame = function() {
+  if (typeof _origEndGameArena === 'function') _origEndGameArena();
+  // Crowd bonus
+  const crowdBonus = getArenaBonus('gameCoin');
+  if (crowdBonus > 0) { window.addCoins(crowdBonus); updateCoinsDisplay(); }
+  // XP bonus
+  const xpBonus = getArenaBonus('xpBonus');
+  if (xpBonus > 0) addXP(xpBonus);
+  // Gem per 5 games
+  const ls = getLifetimeStats();
+  if (getArenaBonus('gemPer5') > 0 && ls.gamesPlayed % 5 === 0) {
+    window.addGems(1); updateCoinsDisplay();
+    showToast('🏟️ Arena bonus: +1💎 (5 games played!)', '#00d4ff', 2000);
+  }
+};
+
+// ===== COOL 6: PLAYER SHOWCASE (top 3 cards on hub) =====
+function renderShowcase() {
+  const container = document.getElementById('showcaseBar');
+  if (!container) return;
+  const top3 = PS.collection.map(id => PLAYER_DB.find(p => p.id === id)).filter(Boolean)
+    .sort((a,b) => b.ovr - a.ovr).slice(0,3);
+  if (!top3.length) { container.innerHTML = ''; return; }
+  let html = `<div class="showcase-bar">`;
+  top3.forEach(p => {
+    const r = RARITY[p.rarity];
+    const lv = getCardLevel(p.id);
+    html += `<div class="showcase-chip" style="border-color:${r.color}55;background:${r.bg}">
+      <span style="color:${r.color};font-weight:900">${p.ovr + lv}</span>
+      <span style="font-size:10px;color:${r.textColor}">${p.name}</span>
+      ${lv > 0 ? `<span style="font-size:9px;color:#ffd700">Lv${lv}</span>` : ''}
+    </div>`;
+  });
+  html += `</div>`;
+  container.innerHTML = html;
+}
+
+// ===== COOL 7: LUCKY PLAYER DAILY =====
+function getLuckyPlayer() {
+  const today = todayKey();
+  const hash = today.split('').reduce((a,c)=>a+c.charCodeAt(0),0);
+  const myPlayers = PS.collection.map(id => PLAYER_DB.find(p => p.id === id)).filter(Boolean);
+  if (!myPlayers.length) return null;
+  return myPlayers[hash % myPlayers.length];
+}
+
+function getLuckyPlayerBonus() { return 0.10; } // 10% stat boost
+
+// Patch getEffectiveStat to include lucky player boost
+const _origGetEffStat2 = window.getEffectiveStat;
+window.getEffectiveStat = function(pid, stat) {
+  const base = _origGetEffStat2 ? _origGetEffStat2(pid, stat) : 0;
+  const lucky = getLuckyPlayer();
+  if (lucky && lucky.id === pid) return Math.min(99, Math.floor(base * (1 + getLuckyPlayerBonus())));
+  return base;
+};
+
+// ===== COOL 8: QUICK SELL PLAYERS =====
+window.quickSellPlayer = function(pid) {
+  const p = PLAYER_DB.find(pl => pl.id === pid);
+  if (!p) return;
+  const prices = { bronze:200, silver:800, gold:3000, elite:10000, legend:35000 };
+  const price = prices[p.rarity] || 500;
+  if (!confirm(`Sell ${p.name} for 🪙${price.toLocaleString()}? This removes them from your collection!`)) return;
+  const idx = PS.collection.indexOf(pid);
+  if (idx === -1) return;
+  PS.collection.splice(idx, 1);
+  // Remove from squad if equipped
+  ['PG','SG','SF','PF','C'].forEach(pos => { if (PS.squad[pos] === pid) PS.squad[pos] = null; });
+  savePS();
+  window.addCoins(price);
+  updateCoinsDisplay();
+  showToast(`💰 Sold ${p.name} for 🪙${price.toLocaleString()}!`, '#22c55e');
+};
+
+// ===== COOL 9: PRESTIGE ICON CARDS =====
+const PRESTIGE_ICONS = [
+  { id:'pio_golden', name:'GOLDEN Jordan', base:'mj', reqPrestige:3, gemCost:0, boostedStats:{sht:99,spd:99,drb:99,def:99,phy:99}, extraTrait:'legend_aura', color:'#ffd700' },
+  { id:'pio_fire',   name:'FIRE LeBron',   base:'lebron', reqPrestige:5, gemCost:0, boostedStats:{sht:99,spd:99,drb:99,def:99,phy:99}, extraTrait:'hot_hand', color:'#ff4500' },
+  { id:'pio_ice',    name:'ICE Curry',     base:'curry',  reqPrestige:4, gemCost:0, boostedStats:{sht:99,spd:99,drb:99,def:90,phy:88}, extraTrait:'deep_range', color:'#00d4ff' },
+];
+
+function renderPrestigeIconsScreen() {
+  const container = document.getElementById('prestigeIconContent');
+  if (!container) return;
+  const prestige = (JSON.parse(localStorage.getItem('clicker')||'{}')).prestige || 0;
+
+  let html = `<div class="pio-wrap">
+    <h3 class="pio-title">👑 PRESTIGE ICON CARDS</h3>
+    <p class="pio-desc">Exclusive cards unlocked only by prestiging in Ball Tycoon. Your prestige: ⭐${prestige}</p>
+    <div class="pio-grid">`;
+
+  PRESTIGE_ICONS.forEach(ic => {
+    const base = PLAYER_DB.find(p => p.id === ic.base);
+    if (!base) return;
+    const owned = PS.collection.includes(ic.id);
+    const unlocked = prestige >= ic.reqPrestige;
+    html += `<div class="pio-card ${!unlocked ? 'pio-locked' : owned ? 'pio-owned' : ''}">
+      <div class="pio-badge" style="background:${ic.color}22;color:${ic.color};border-color:${ic.color}44">
+        ${unlocked ? '👑 PRESTIGE ICON' : `🔒 Req ⭐${ic.reqPrestige}`}
+      </div>
+      <div style="font-size:28px;margin:8px 0">${unlocked ? '🏀' : '❓'}</div>
+      <div style="font-size:14px;font-weight:900;color:${ic.color}">${ic.name}</div>
+      <div style="font-size:11px;color:#888;margin:4px 0">${base.team} · ICON</div>
+      <div style="font-size:22px;font-weight:900;color:${ic.color};margin:4px 0">99 OVR</div>
+      <button class="btn ${owned ? 'btn-secondary' : unlocked ? 'btn-primary' : 'btn-secondary'} pio-btn"
+        onclick="${!unlocked || owned ? '' : `claimPrestigeIcon('${ic.id}')`}"
+        ${!unlocked || owned ? 'disabled' : ''}
+        style="min-width:0;padding:6px 14px;font-size:11px;margin-top:8px;background:${unlocked&&!owned?ic.color:''};border-color:${ic.color}">
+        ${owned ? '✓ OWNED' : unlocked ? 'CLAIM FREE' : `Need ⭐${ic.reqPrestige}`}
+      </button>
+    </div>`;
+  });
+
+  html += `</div></div>`;
+  container.innerHTML = html;
+}
+
+window.claimPrestigeIcon = function(iconId) {
+  const ic = PRESTIGE_ICONS.find(x => x.id === iconId);
+  if (!ic) return;
+  const prestige = (JSON.parse(localStorage.getItem('clicker')||'{}')).prestige || 0;
+  if (prestige < ic.reqPrestige) { alert(`Need Prestige ${ic.reqPrestige}!`); return; }
+  const base = PLAYER_DB.find(p => p.id === ic.base);
+  if (!base) return;
+  if (!PLAYER_DB.find(p => p.id === ic.id)) {
+    PLAYER_DB.push({ ...base, id:ic.id, name:ic.name, full:ic.name, ovr:99, rarity:'legend',
+      stats:{...ic.boostedStats}, traits:[...new Set([...base.traits.slice(0,2), ic.extraTrait])], color:ic.color });
+  }
+  if (!PS.collection.includes(ic.id)) PS.collection.push(ic.id);
+  savePS(); updateCoinsDisplay();
+  showToast(`👑 ${ic.name} — Prestige Icon claimed!`, ic.color);
+  renderPrestigeIconsScreen();
+};
+
+// ===== COOL 10: RARITY UPGRADE (SPECIAL SILVER CARD) =====
+window.openRarityUpgradeScreen = function() { showScreen('rarityUpgradeScreen'); };
+
+function renderRarityUpgradeScreen() {
+  const container = document.getElementById('rarityUpContent');
+  if (!container) return;
+  const rarityOrder = ['bronze','silver','gold','elite','legend'];
+  const nextRarity = { bronze:'silver', silver:'gold', gold:'elite', elite:'legend' };
+  const upgCosts = { bronze:5000, silver:20000, gold:80000, elite:300000 };
+
+  // Count owned by rarity
+  const counts = {};
+  PS.collection.forEach(id => {
+    const p = PLAYER_DB.find(pl => pl.id === id);
+    if (p && !p.id.startsWith('ico_') && !p.id.startsWith('pio_')) counts[p.rarity] = (counts[p.rarity]||0)+1;
+  });
+
+  const coins = window.getCoins();
+  let html = `<div class="rarup-wrap">
+    <h3 class="rarup-title">✨ RARITY UPGRADE</h3>
+    <p class="rarup-desc">Spend coins to upgrade a random card to the next rarity!</p>
+    <div class="rarup-grid">`;
+
+  ['bronze','silver','gold','elite'].forEach(r => {
+    const nr = nextRarity[r];
+    const cost = upgCosts[r];
+    const count = counts[r] || 0;
+    const can = count > 0 && coins >= cost;
+    const rc = RARITY[r], nc = RARITY[nr];
+    html += `<div class="rarup-card">
+      <div class="rarup-from" style="color:${rc.textColor}">${rc.label}</div>
+      <div class="rarup-arrow">→</div>
+      <div class="rarup-to" style="color:${nc.textColor}">${nc.label}</div>
+      <div class="rarup-owned">${count} owned</div>
+      <div class="rarup-cost">🪙${cost.toLocaleString()}</div>
+      <button class="btn ${can ? 'btn-primary' : 'btn-secondary'} rarup-btn"
+        onclick="${can ? `doRarityUpgrade('${r}')` : ''}" ${can ? '' : 'disabled'}
+        style="min-width:0;padding:6px 12px;font-size:10px">
+        ${can ? '✨ UPGRADE' : count === 0 ? `No ${rc.label}` : `Need 🪙${fmtCoins(cost)}`}
+      </button>
+    </div>`;
+  });
+
+  html += `</div></div>`;
+  container.innerHTML = html;
+}
+
+window.doRarityUpgrade = function(rarity) {
+  const nr = { bronze:'silver', silver:'gold', gold:'elite', elite:'legend' }[rarity];
+  const cost = { bronze:5000, silver:20000, gold:80000, elite:300000 }[rarity];
+  if (!nr || !window.spendCoins(cost)) return;
+  const candidates = PS.collection.filter(id => {
+    const p = PLAYER_DB.find(pl => pl.id === id);
+    return p && p.rarity === rarity && !id.startsWith('ico_') && !id.startsWith('pio_');
+  });
+  if (!candidates.length) return;
+  const upId = candidates[Math.floor(Math.random() * candidates.length)];
+  PS.collection.splice(PS.collection.indexOf(upId), 1);
+  const pool = PLAYER_DB.filter(p => p.rarity === nr && !p.id.startsWith('ico_') && !PS.collection.includes(p.id));
+  const result = pool[Math.floor(Math.random() * pool.length)];
+  if (result) PS.collection.push(result.id);
+  savePS(); checkCollectionMilestones(); updateCoinsDisplay();
+  showToast(`✨ Rarity Upgrade! Got ${result ? result.name : 'a '+nr+' player'}!`, RARITY[nr]?.color);
+  renderRarityUpgradeScreen();
+};
+
+// ===== SCREEN HOOKS FOR NEW COOL FEATURES =====
+const _origShowScreen3 = window.showScreen;
+window.showScreen = function(id) {
+  if (_origShowScreen3) _origShowScreen3(id);
+  if (id === 'cardLevelScreen')     renderCardLevelUp();
+  if (id === 'bountyScreen')        renderBountyBoard();
+  if (id === 'arenaUpgradeScreen')  renderArenaUpgradesScreen();
+  if (id === 'prestigeIconScreen')  renderPrestigeIconsScreen();
+  if (id === 'rarityUpgradeScreen') renderRarityUpgradeScreen();
+  if (id === 'splash') { setTimeout(renderShowcase, 500); setTimeout(checkSetCompletion, 1000); }
+};
 
 // ===== INIT =====
 window.addEventListener('load', () => {
